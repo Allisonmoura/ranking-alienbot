@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranking AlienBot</title>
+<style>
+:root {
+  --site-primary: #51218c;
+  --site-on-primary: #ffffff;
+  --site-secondary: #201331;
+  --site-on-secondary: #ffffff;
+  --site-background: #100b18;
+  --site-on-background: #f6f0ff;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  color-scheme: light dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--site-font-body); background: var(--site-background); color: var(--site-on-background); }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); overflow: hidden; position: relative; }
+.bg-glow { position: absolute; inset: 0; pointer-events: none; opacity: var(--site-decoration-opacity); background: radial-gradient(ellipse at 50% -15%, #7e42bd66, transparent 55%), radial-gradient(circle at 95% 55%, #44206444, transparent 30%); }
+main { position: relative; max-width: 1050px; margin: 0 auto; padding: calc(30px * var(--site-spacing-scale)) 22px 52px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 26px; }
+.brand { display:flex; align-items:center; gap:12px; font-weight:900; letter-spacing:.13em; }
+.alien { width:48px; height:48px; border-radius:16px; display:grid; place-items:center; background:linear-gradient(145deg,#7b3eb4,#30164f); border:1px solid #b88be8; font-size:27px; box-shadow:0 8px 30px #7c3ab555; }
+.tag { color:#d9b9ff; border:1px solid #7954a0; background:#29183c; border-radius:999px; padding:8px 13px; font-size:11px; font-weight:800; letter-spacing:.12em; }
+.hero { text-align:center; padding:26px 10px 28px; }
+.kicker { color:#c49be9; font-size:12px; font-weight:800; letter-spacing:.25em; text-transform:uppercase; }
+h1 { font-family:var(--site-font-heading); font-size:clamp(32px,6vw,58px); line-height:1.02; letter-spacing:-.045em; margin:12px 0 10px; font-weight:950; }
+.gradient { background:linear-gradient(90deg,#fff 5%,#d9b5ff 48%,#a77ad5 95%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.subtitle { color:#b8a9c8; margin:0 auto; max-width:600px; line-height:1.6; font-size:15px; }
+.score-note { margin:20px auto 0; display:inline-flex; align-items:center; gap:8px; border:1px solid #533b6c; background:#21162d; color:#e5d5f5; padding:9px 14px; border-radius:999px; font-size:12px; }
+.podium { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:13px; margin:22px 0 28px; align-items:stretch; }
+.place { position:relative; min-height:174px; border:1px solid #48345c; background:linear-gradient(155deg,#261a34,#17101f); border-radius:calc(20px * var(--site-radius-scale)); padding:19px 12px 16px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; }
+.place.first { border-color:#b68b45; background:linear-gradient(155deg,#4a351b,#211827 75%); box-shadow:0 12px 35px #d29a3820; }
+.medal { font-size:29px; margin-bottom:9px; }
+.place-label { color:#bba8cd; font-size:10px; font-weight:900; letter-spacing:.15em; }
+.place.first .place-label { color:#f0ce83; }
+.student-name { margin-top:10px; font-size:15px; font-weight:850; line-height:1.25; overflow-wrap:anywhere; }
+.points { color:#c7a7e8; font-size:13px; font-weight:800; margin-top:7px; }
+.place.first .points { color:#f2d28d; }
+.empty { color:#887b96; font-size:13px; font-weight:600; margin-top:12px; }
+.section-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:28px 0 13px; }
+.section-title h2 { font-size:16px; margin:0; letter-spacing:.02em; }
+.count { color:#aa99bb; font-size:12px; }
+.table-wrap { border:1px solid #392849; border-radius:16px; overflow:hidden; background:#191120; }
+table { width:100%; border-collapse:collapse; }
+th,td { text-align:left; padding:14px 16px; border-bottom:1px solid #30223b; font-size:13px; }
+th { color:#aa96bd; font-size:10px; letter-spacing:.13em; text-transform:uppercase; background:#21162d; }
+tr:last-child td { border-bottom:0; }
+td:last-child, th:last-child { text-align:right; }
+.rank-num { color:#c9a7e8; font-weight:900; }
+.student-cell { font-weight:750; }
+.points-cell { color:#d8b6ff; font-weight:850; }
+.admin { margin-top:32px; border:1px solid #49345f; background:#1b1324; border-radius:18px; overflow:hidden; }
+.admin-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:17px 18px; background:#251833; }
+.admin-head h2 { font-size:15px; margin:0; }
+.admin-head p { margin:4px 0 0; color:#b8a8c7; font-size:12px; }
+button { cursor:pointer; font:inherit; border:0; border-radius:10px; padding:10px 13px; font-weight:800; }
+.toggle { background:#513078; color:white; border:1px solid #8156aa; }
+.admin-body { padding:18px; display:none; }
+.admin-body.open { display:block; }
+.form-grid { display:grid; grid-template-columns:1.4fr 1fr 1fr auto; gap:10px; align-items:end; }
+.field label { display:block; color:#b8a8c7; font-size:11px; font-weight:750; margin:0 0 7px; }
+input, select { width:100%; min-width:0; background:#100b18; color:#f7efff; border:1px solid #57436a; border-radius:10px; padding:11px 12px; font:inherit; outline:none; }
+input:focus,select:focus { border-color:#bd8deb; box-shadow:0 0 0 3px #a36acb22; }
+.primary-btn { background:var(--site-primary); color:white; border:1px solid #9b6cc5; min-height:42px; }
+.secondary-btn { background:#30213e; color:#e7d9f5; border:1px solid #58436b; }
+.danger-btn { background:#49202d; color:#ffdce3; border:1px solid #854352; }
+.admin-actions { display:flex; gap:9px; flex-wrap:wrap; margin-top:14px; }
+.manage-list { margin-top:18px; border-top:1px solid #3a2948; padding-top:15px; }
+.manage-row { display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #30223b; font-size:13px; }
+.manage-row:last-child { border:0; }
+.manage-row .student-cell { overflow-wrap:anywhere; }
+.small-btn { padding:7px 10px; font-size:12px; }
+.notice { color:#a99ab6; font-size:11px; line-height:1.5; margin:13px 0 0; }
+.login-box { display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end; padding:15px; margin-bottom:16px; border:1px solid #57436a; border-radius:12px; background:#140d1d; }
+.login-status { grid-column:1/-1; color:#b8a8c7; font-size:12px; margin:0; }
+.connection-status { display:inline-flex; align-items:center; gap:7px; color:#b8a8c7; font-size:11px; margin-top:12px; }
+.connection-dot { width:8px; height:8px; border-radius:50%; background:#d29a38; display:inline-block; }
+.connection-dot.online { background:#53c58a; }
+.admin-tools[hidden], .login-box[hidden] { display:none !important; }
+footer { text-align:center; color:#897b98; font-size:11px; letter-spacing:.08em; margin-top:30px; }
+footer strong { color:#c8a4e9; }
+@media (max-width:700px) { main { padding:20px 14px 38px; } .podium { grid-template-columns:repeat(2,minmax(0,1fr)); } .place { min-height:150px; } .form-grid { grid-template-columns:1fr 1fr; } .form-grid .wide { grid-column:1/-1; } .admin-head { align-items:flex-start; } th,td { padding:12px 10px; } }
+@media (max-width:700px) { .login-box { grid-template-columns:1fr; } }
+@media (max-width:390px) { .tag { font-size:9px; padding:7px 9px; } .brand { letter-spacing:.08em; font-size:13px; } .form-grid { grid-template-columns:1fr; } .form-grid .wide { grid-column:auto; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="bg-glow" aria-hidden="true"></div>
+  <main>
+    <header>
+      <div class="brand"><div class="alien" aria-hidden="true">👽</div><span>ALIENBOT</span></div>
+      <div class="tag">OBR · ROBÓTICA ARTÍSTICA</div>
+    </header>
+    <section class="hero">
+      <div class="kicker">Desafio de conhecimento e dedicação</div>
+      <h1><span class="gradient">RANKING</span><br>ALIENBOT</h1>
+      <p class="subtitle">Cada desafio é uma oportunidade de evoluir. Estude, pratique, some pontos e conquiste seu lugar no pódio!</p>
+      <div class="score-note">🏆 <span>Os quatro primeiros colocados da equipe</span></div>
+    </section>
+    <section aria-label="Quatro primeiros colocados">
+      <div class="podium" id="podium"></div>
+    </section>
+    <div class="section-title"><h2>CLASSIFICAÇÃO GERAL</h2><span class="count" id="studentCount">0 participantes</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Posição</th><th>Aluno(a)</th><th>Pontos</th></tr></thead>
+        <tbody id="rankingRows"><tr><td colspan="3" style="text-align:center;color:#9f91aa;padding:24px">Aguardando o cadastro dos primeiros alunos.</td></tr></tbody>
+      </table>
+    </div>
+    <section class="admin">
+      <div class="admin-head">
+        <div><h2>⚙️ ÁREA DO PROFESSOR</h2><p>Cadastre alunos e atualize a pontuação.</p></div>
+        <button class="toggle" id="toggleAdmin" type="button">Abrir painel</button>
+      </div>
+      <div class="admin-body" id="adminBody">
+        <div class="login-box" id="loginBox">
+          <div class="field"><label for="teacherEmail">E-MAIL DO PROFESSOR</label><input id="teacherEmail" type="email" autocomplete="username" placeholder="E-mail da conta do professor"></div>
+          <div class="field"><label for="teacherPassword">SENHA</label><input id="teacherPassword" type="password" autocomplete="current-password" placeholder="Senha da conta"></div>
+          <button class="primary-btn" id="loginButton" type="button">Entrar</button>
+          <p class="login-status" id="loginStatus">Entre com a conta de professor já cadastrada no Supabase para gerenciar a pontuação.</p>
+        </div>
+        <div class="admin-tools" id="adminTools" hidden>
+        <div class="form-grid">
+          <div class="field wide"><label for="studentName">NOME DO ALUNO</label><input id="studentName" type="text" maxlength="48" placeholder="Digite o nome do aluno"></div>
+          <div class="field"><label for="scoreValue">PONTOS</label><input id="scoreValue" type="number" min="1" max="10000" value="10"></div>
+          <div class="field"><label for="scoreAction">AÇÃO</label><select id="scoreAction"><option value="add">Adicionar pontos</option><option value="remove">Retirar pontos</option></select></div>
+        </div>
+        <div class="admin-actions">
+          <button class="primary-btn" id="saveStudent" type="button">Cadastrar aluno</button>
+          <button class="secondary-btn" id="applyScore" type="button">Lançar pontos</button>
+          <button class="secondary-btn" id="exportData" type="button">Exportar dados</button>
+          <button class="secondary-btn" id="importButton" type="button">Importar dados</button>
+          <input id="importFile" type="file" accept="application/json" hidden>
+        </div>
+        <div class="manage-list"><div class="section-title" style="margin:0 0 8px"><h2>GERENCIAR ALUNOS</h2><span class="count">Selecione um aluno para lançar pontos</span></div><div id="manageRows"><p class="notice">Nenhum aluno cadastrado ainda.</p></div></div>
+        <div class="admin-actions"><button class="secondary-btn" id="logoutButton" type="button">Sair da conta</button></div>
+        <p class="notice">Os dados são compartilhados pelo Supabase. As alterações aparecem automaticamente para todos que estiverem com o ranking aberto.</p>
+        </div>
+        <div class="connection-status"><span class="connection-dot" id="connectionDot"></span><span id="connectionText">Conectando ao banco de dados...</span></div>
+      </div>
+    </section>
+    <footer>ALIENBOT <strong>•</strong> É PEDRAS DE FOGO NA NACIONAL! <strong>👽</strong></footer>
+  </main>
+</div>
+<script>
+const SUPABASE_URL = 'https://cfmvitinrefjjhmaxgky.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UPgE31ZOc8tKJs2ecbEgug_cIzujE7i';
+const SESSION_KEY = 'alienbot-teacher-session-v1';
+let students = [], selectedId = null, session = null, refreshTimer = null;
+try { session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { session = null; }
+const $ = (id) => document.getElementById(id);
+const sorted = () => [...students].sort((a,b) => b.points - a.points || a.name.localeCompare(b.name, 'pt-BR'));
+const escapeHTML = (value) => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+function setConnection(ok, message) { $('connectionDot').classList.toggle('online',ok); $('connectionText').textContent=message; }
+function headers(token) { return {'apikey':SUPABASE_ANON_KEY,'Authorization':`Bearer ${token || SUPABASE_ANON_KEY}`,'Content-Type':'application/json'}; }
+async function api(path, options={}) { const response=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{...options,headers:{...headers(session?.access_token),...(options.headers||{})}}); if(!response.ok){const body=await response.text();throw new Error(body || `Erro ${response.status}`);} return response.status===204?null:response.json(); }
+async function loadStudents() { students=await api('alienbot_students?select=id,name,points&order=points.desc,name.asc'); render(); setConnection(true,'Banco de dados conectado'); }
+function setAdminState(loggedIn) { $('loginBox').hidden=loggedIn; $('adminTools').hidden=!loggedIn; $('loginStatus').textContent=loggedIn?'Sessão do professor ativa.':'Entre com a conta de professor já cadastrada no Supabase para gerenciar a pontuação.'; }
+async function login() { const email=$('teacherEmail').value.trim(), password=$('teacherPassword').value; if(!email||!password){$('loginStatus').textContent='Informe o e-mail e a senha.';return;} $('loginButton').disabled=true; $('loginStatus').textContent='Validando acesso...'; try { const r=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})}); const data=await r.json(); if(!r.ok) throw new Error(data.msg||data.message||'E-mail ou senha inválidos.'); session=data; localStorage.setItem(SESSION_KEY,JSON.stringify(session)); setAdminState(true); $('teacherPassword').value=''; $('loginStatus').textContent='Acesso autorizado.'; await loadStudents(); } catch(e){$('loginStatus').textContent=`Não foi possível entrar: ${e.message}`;} finally {$('loginButton').disabled=false;} }
+function logout() { session=null; localStorage.removeItem(SESSION_KEY); setAdminState(false); $('teacherEmail').value=''; $('teacherPassword').value=''; }
+async function saveStudent() { const name=$('studentName').value.trim(); if(!name){alert('Digite o nome do aluno.');return;} try { await api('alienbot_students',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify({name,points:0})}); $('studentName').value=''; await loadStudents(); } catch(e){alert(`Não foi possível cadastrar: ${e.message}`);} }
+async function applyScore() { const amount=Number($('scoreValue').value); if(!selectedId){alert('Selecione um aluno na lista Gerenciar Alunos.');return;} if(!Number.isInteger(amount)||amount<1||amount>10000){alert('Informe uma quantidade de pontos entre 1 e 10.000.');return;} const s=students.find(x=>x.id===selectedId); if(!s)return; const points=$('scoreAction').value==='add'?s.points+amount:Math.max(0,s.points-amount); try { await api(`alienbot_students?id=eq.${encodeURIComponent(selectedId)}`,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({points})}); await loadStudents(); alert(`Pontuação atualizada: ${s.name} agora tem ${points} pontos.`); } catch(e){alert(`Não foi possível atualizar: ${e.message}`);} }
+function render() {
+  const ranking = sorted();
+  const medals = ['🥇','🥈','🥉','🏅'];
+  const labels = ['1º LUGAR','2º LUGAR','3º LUGAR','4º LUGAR'];
+  $('podium').innerHTML = Array.from({length:4}, (_,i) => {
+    const s = ranking[i];
+    return `<article class="place ${i===0?'first':''}"><div class="medal">${medals[i]}</div><div class="place-label">${labels[i]}</div>${s ? `<div class="student-name">${escapeHTML(s.name)}</div><div class="points">${s.points} ${s.points===1?'ponto':'pontos'}</div>` : '<div class="empty">Aguardando aluno</div>'}</article>`;
+  }).join('');
+  $('studentCount').textContent = `${students.length} ${students.length===1?'participante':'participantes'}`;
+  $('rankingRows').innerHTML = ranking.length ? ranking.map((s,i)=>`<tr><td class="rank-num">${i+1}º</td><td class="student-cell">${escapeHTML(s.name)}</td><td class="points-cell">${s.points}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:#9f91aa;padding:24px">Aguardando o cadastro dos primeiros alunos.</td></tr>';
+  $('manageRows').innerHTML = ranking.length ? ranking.map(s=>`<div class="manage-row"><span class="student-cell">${escapeHTML(s.name)} <span style="color:#a895b9;font-weight:600">· ${s.points} pts</span></span><button class="secondary-btn small-btn" type="button" data-select="${s.id}">Selecionar</button><button class="danger-btn small-btn" type="button" data-delete="${s.id}" aria-label="Excluir ${escapeHTML(s.name)}">Excluir</button></div>`).join('') : '<p class="notice">Nenhum aluno cadastrado ainda.</p>';
+}
+$('toggleAdmin').addEventListener('click',()=>{ const open=$('adminBody').classList.toggle('open'); $('toggleAdmin').textContent=open?'Fechar painel':'Abrir painel'; });
+$('loginButton').addEventListener('click',login);
+$('teacherPassword').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+$('logoutButton').addEventListener('click',logout);
+$('saveStudent').addEventListener('click',saveStudent);
+$('applyScore').addEventListener('click',applyScore);
+$('manageRows').addEventListener('click',(event)=>{
+  const select=event.target.closest('[data-select]'); const del=event.target.closest('[data-delete]');
+  if(select){selectedId=select.dataset.select; const s=students.find(x=>x.id===selectedId); $('studentName').value=s?s.name:''; $('applyScore').textContent=s?`Lançar pontos para ${s.name}`:'Lançar pontos'; $('manageRows').querySelectorAll('[data-select]').forEach(b=>b.textContent=b===select?'Selecionado':'Selecionar');}
+  if(del){const s=students.find(x=>x.id===del.dataset.delete); if(s&&confirm(`Excluir ${s.name} do ranking?`)){api(`alienbot_students?id=eq.${encodeURIComponent(s.id)}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}}).then(()=>{if(selectedId===s.id)selectedId=null;loadStudents();}).catch(e=>alert(`Não foi possível excluir: ${e.message}`));}}
+});
+$('exportData').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(students,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='alienbot-ranking-dados.json';a.click();URL.revokeObjectURL(url);});
+$('importButton').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async(event)=>{const file=event.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(!Array.isArray(data)||data.some(s=>typeof s.name!=='string'||!Number.isFinite(s.points)))throw new Error();for(const item of data){await api('alienbot_students',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify({name:item.name.trim(),points:Math.max(0,Math.floor(item.points))})});}selectedId=null;await loadStudents();alert('Dados importados com sucesso.');}catch(e){alert(`Não foi possível importar: ${e.message}`);}event.target.value='';});
+async function start() { setAdminState(false); try { await loadStudents(); } catch(e) { setConnection(false,`Falha ao conectar ao banco: ${e.message}`); $('rankingRows').innerHTML='<tr><td colspan="3" style="text-align:center;color:#f0b4bd;padding:24px">Não foi possível carregar o ranking. Verifique a conexão e as permissões públicas do Supabase.</td></tr>'; } if(session?.access_token){setAdminState(true);} refreshTimer=setInterval(()=>loadStudents().catch(()=>setConnection(false,'Sem conexão com o banco de dados')),10000); }
+start();
+</script>
+</body>
+</html>
