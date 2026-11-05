@@ -8,54 +8,65 @@
 
 <style>
 :root {
-  --site-primary: #51218c;
-  --site-on-primary: #ffffff;
-  --site-secondary: #201331;
-  --site-on-secondary: #ffffff;
-  --site-background: #100b18;
-  --site-on-background: #f6f0ff;
-  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --site-heading-scale: 1;
-  --site-spacing-scale: 1;
-  --site-radius-scale: 1;
-  --site-decoration-opacity: 1;
-  color-scheme: light dark;
+  --site-primary: #ffffff;
+  --site-background: #050505;
+  --site-on-background: #ffffff;
+  --white: #ffffff;
+  --muted: #a6a6a6;
+  --panel: #111111;
+  --border: #333333;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: var(--site-font-body);
-  background: var(--site-background);
-  color: var(--site-on-background);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #050505;
+  color: #fff;
 }
 
 #app {
   min-height: 100vh;
   width: 100%;
-  background-color: var(--site-background);
-  color: var(--site-on-background);
-  overflow: hidden;
+  background: #050505;
   position: relative;
+  overflow: hidden;
 }
 
+/* ILUMINAÇÃO MONOCROMÁTICA DO FUNDO */
+
 .bg-glow {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  z-index: 0;
   pointer-events: none;
-  opacity: var(--site-decoration-opacity);
   background:
-    radial-gradient(ellipse at 50% -15%, #7e42bd66, transparent 55%),
-    radial-gradient(circle at 95% 55%, #44206444, transparent 30%);
+    radial-gradient(ellipse at 50% -15%, #ffffff18, transparent 55%),
+    radial-gradient(circle at 95% 55%, #ffffff0c, transparent 30%),
+    radial-gradient(circle at 5% 85%, #ffffff08, transparent 28%);
+}
+
+/* EFEITO MATRIX */
+
+#matrixCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .25;
 }
 
 main {
   position: relative;
+  z-index: 2;
   max-width: 1050px;
   margin: 0 auto;
-  padding: calc(30px * var(--site-spacing-scale)) 22px 52px;
+  padding: 30px 22px 52px;
 }
 
 header {
@@ -70,30 +81,38 @@ header {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-weight: 900;
-  letter-spacing: .13em;
+  font-weight: 950;
+  letter-spacing: .16em;
 }
 
+/* NOVO SÍMBOLO ALIENBOT */
+
 .alien {
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
   border-radius: 16px;
   display: grid;
   place-items: center;
-  background: linear-gradient(145deg,#7b3eb4,#30164f);
-  border: 1px solid #b88be8;
-  font-size: 27px;
-  box-shadow: 0 8px 30px #7c3ab555;
+  background: #000;
+  border: 1.5px solid #fff;
+  box-shadow: 0 0 22px #ffffff20;
+  padding: 5px;
+}
+
+.alien svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .tag {
-  color: #d9b9ff;
-  border: 1px solid #7954a0;
-  background: #29183c;
+  color: #fff;
+  border: 1px solid #555;
+  background: #151515;
   border-radius: 999px;
   padding: 8px 13px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 850;
   letter-spacing: .12em;
 }
 
@@ -103,15 +122,14 @@ header {
 }
 
 .kicker {
-  color: #c49be9;
+  color: #c8c8c8;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 850;
   letter-spacing: .25em;
   text-transform: uppercase;
 }
 
 h1 {
-  font-family: var(--site-font-heading);
   font-size: clamp(32px,6vw,58px);
   line-height: 1.02;
   letter-spacing: -.045em;
@@ -120,14 +138,14 @@ h1 {
 }
 
 .gradient {
-  background: linear-gradient(90deg,#fff 5%,#d9b5ff 48%,#a77ad5 95%);
+  background: linear-gradient(90deg,#fff 5%,#d5d5d5 48%,#888 95%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .subtitle {
-  color: #b8a9c8;
+  color: #aaa;
   margin: 0 auto;
   max-width: 600px;
   line-height: 1.6;
@@ -139,13 +157,15 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #533b6c;
-  background: #21162d;
-  color: #e5d5f5;
+  border: 1px solid #484848;
+  background: #171717;
+  color: #eee;
   padding: 9px 14px;
   border-radius: 999px;
   font-size: 12px;
 }
+
+/* PÓDIO */
 
 .podium {
   display: grid;
@@ -158,9 +178,9 @@ h1 {
 .place {
   position: relative;
   min-height: 174px;
-  border: 1px solid #48345c;
-  background: linear-gradient(155deg,#261a34,#17101f);
-  border-radius: calc(20px * var(--site-radius-scale));
+  border: 1px solid #424242;
+  background: linear-gradient(155deg,#202020,#101010);
+  border-radius: 20px;
   padding: 19px 12px 16px;
   text-align: center;
   display: flex;
@@ -173,14 +193,14 @@ h1 {
 }
 
 .place.first {
-  border-color: #b68b45;
-  background: linear-gradient(155deg,#4a351b,#211827 75%);
-  box-shadow: 0 12px 35px #d29a3820;
+  border-color: #ddd;
+  background: linear-gradient(155deg,#393939,#151515 75%);
+  box-shadow: 0 12px 35px #ffffff12;
 }
 
 .place:hover {
   transform: translateY(-3px);
-  border-color: #a77ad5;
+  border-color: #fff;
 }
 
 .medal {
@@ -189,13 +209,13 @@ h1 {
 }
 
 .place-label {
-  color: #bba8cd;
+  color: #bbb;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: .15em;
 }
 
-.place.first .place-label { color: #f0ce83; }
+.place.first .place-label { color: #fff; }
 
 .student-name {
   margin-top: 10px;
@@ -206,16 +226,16 @@ h1 {
 }
 
 .points {
-  color: #c7a7e8;
+  color: #ddd;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 850;
   margin-top: 7px;
 }
 
-.place.first .points { color: #f2d28d; }
+.place.first .points { color: #fff; }
 
 .empty {
-  color: #887b96;
+  color: #888;
   font-size: 13px;
   font-weight: 600;
   margin-top: 12px;
@@ -231,7 +251,7 @@ h1 {
   align-items: center;
   justify-content: center;
   padding: 18px;
-  background: #08050dcc;
+  background: #000d;
   backdrop-filter: blur(5px);
 }
 
@@ -245,10 +265,10 @@ h1 {
   gap: 18px;
   align-items: center;
   padding: 22px;
-  border: 1px solid #7954a0;
+  border: 1px solid #777;
   border-radius: 18px;
-  background: linear-gradient(145deg,#291b38,#130d1c);
-  box-shadow: 0 22px 70px #0009;
+  background: linear-gradient(145deg,#252525,#090909);
+  box-shadow: 0 22px 70px #000;
 }
 
 .profile-photo {
@@ -256,8 +276,8 @@ h1 {
   height: 150px;
   border-radius: 13px;
   object-fit: cover;
-  background: #30213e;
-  border: 1px solid #624579;
+  background: #222;
+  border: 1px solid #555;
 }
 
 .profile-info h2 {
@@ -268,7 +288,7 @@ h1 {
 
 .profile-info p {
   margin: 9px 0;
-  color: #c9b8d9;
+  color: #ccc;
   font-size: 13px;
 }
 
@@ -281,7 +301,7 @@ h1 {
   width: 32px;
   height: 32px;
   padding: 0;
-  background: #3a2948;
+  background: #333;
   color: #fff;
   font-size: 19px;
 }
@@ -299,7 +319,7 @@ h1 {
   }
 }
 
-/* CLASSIFICAÇÃO */
+/* CLASSIFICAÇÃO GERAL */
 
 .section-title {
   display: flex;
@@ -316,15 +336,15 @@ h1 {
 }
 
 .count {
-  color: #aa99bb;
+  color: #aaa;
   font-size: 12px;
 }
 
 .table-wrap {
-  border: 1px solid #392849;
+  border: 1px solid #393939;
   border-radius: 16px;
   overflow: hidden;
-  background: #191120;
+  background: #101010;
 }
 
 table {
@@ -335,16 +355,16 @@ table {
 th,td {
   text-align: left;
   padding: 14px 16px;
-  border-bottom: 1px solid #30223b;
+  border-bottom: 1px solid #292929;
   font-size: 13px;
 }
 
 th {
-  color: #aa96bd;
+  color: #aaa;
   font-size: 10px;
   letter-spacing: .13em;
   text-transform: uppercase;
-  background: #21162d;
+  background: #1b1b1b;
 }
 
 tr:last-child td { border-bottom: 0; }
@@ -352,50 +372,43 @@ tr:last-child td { border-bottom: 0; }
 td:last-child, th:last-child { text-align: right; }
 
 .rank-num {
-  color: #c9a7e8;
+  color: #ddd;
   font-weight: 900;
 }
 
 .student-cell { font-weight: 750; }
 
 .points-cell {
-  color: #d8b6ff;
+  color: #eee;
   font-weight: 850;
 }
 
-/* ZONA DE PERIGO - QUATRO ÚLTIMOS */
+/* ZONA DE PERIGO */
 
 .danger-zone td {
-  background: rgba(190, 35, 55, 0.20);
-  border-bottom-color: rgba(239, 83, 101, 0.30);
+  background: rgba(190,35,55,.20);
+  border-bottom-color: rgba(239,83,101,.30);
 }
 
 .danger-zone td:first-child {
   border-left: 4px solid #ef5365;
 }
 
-.danger-zone .rank-num {
-  color: #ff7180;
-  font-weight: 950;
-}
-
-.danger-zone .student-cell {
-  color: #ffe1e5;
-}
-
+.danger-zone .rank-num,
 .danger-zone .points-cell {
   color: #ff7180;
-  font-size: 15px;
   font-weight: 950;
 }
+
+.danger-zone .student-cell { color: #ffe1e5; }
 
 .danger-label {
   display: inline-block;
   margin-left: 9px;
   padding: 4px 7px;
   border-radius: 6px;
-  background: rgba(190, 35, 55, 0.30);
-  border: 1px solid rgba(239, 83, 101, 0.55);
+  background: rgba(190,35,55,.30);
+  border: 1px solid rgba(239,83,101,.55);
   color: #ff8793;
   font-size: 9px;
   font-weight: 900;
@@ -404,15 +417,15 @@ td:last-child, th:last-child { text-align: right; }
 }
 
 .danger-zone:hover td {
-  background: rgba(190, 35, 55, 0.30);
+  background: rgba(190,35,55,.30);
 }
 
 /* ÁREA DO PROFESSOR */
 
 .admin {
   margin-top: 32px;
-  border: 1px solid #49345f;
-  background: #1b1324;
+  border: 1px solid #444;
+  background: #141414;
   border-radius: 18px;
   overflow: hidden;
 }
@@ -423,7 +436,7 @@ td:last-child, th:last-child { text-align: right; }
   align-items: center;
   gap: 12px;
   padding: 17px 18px;
-  background: #251833;
+  background: #202020;
 }
 
 .admin-head h2 {
@@ -433,7 +446,7 @@ td:last-child, th:last-child { text-align: right; }
 
 .admin-head p {
   margin: 4px 0 0;
-  color: #b8a8c7;
+  color: #aaa;
   font-size: 12px;
 }
 
@@ -447,9 +460,9 @@ button {
 }
 
 .toggle {
-  background: #513078;
-  color: white;
-  border: 1px solid #8156aa;
+  background: #eee;
+  color: #080808;
+  border: 1px solid #fff;
 }
 
 .admin-body {
@@ -468,7 +481,7 @@ button {
 
 .field label {
   display: block;
-  color: #b8a8c7;
+  color: #bbb;
   font-size: 11px;
   font-weight: 750;
   margin: 0 0 7px;
@@ -477,9 +490,9 @@ button {
 input, select {
   width: 100%;
   min-width: 0;
-  background: #100b18;
-  color: #f7efff;
-  border: 1px solid #57436a;
+  background: #090909;
+  color: #fff;
+  border: 1px solid #555;
   border-radius: 10px;
   padding: 11px 12px;
   font: inherit;
@@ -487,21 +500,21 @@ input, select {
 }
 
 input:focus,select:focus {
-  border-color: #bd8deb;
-  box-shadow: 0 0 0 3px #a36acb22;
+  border-color: #fff;
+  box-shadow: 0 0 0 3px #ffffff18;
 }
 
 .primary-btn {
-  background: var(--site-primary);
-  color: white;
-  border: 1px solid #9b6cc5;
+  background: #fff;
+  color: #050505;
+  border: 1px solid #fff;
   min-height: 42px;
 }
 
 .secondary-btn {
-  background: #30213e;
-  color: #e7d9f5;
-  border: 1px solid #58436b;
+  background: #292929;
+  color: #eee;
+  border: 1px solid #555;
 }
 
 .danger-btn {
@@ -519,7 +532,7 @@ input:focus,select:focus {
 
 .manage-list {
   margin-top: 18px;
-  border-top: 1px solid #3a2948;
+  border-top: 1px solid #393939;
   padding-top: 15px;
 }
 
@@ -529,7 +542,7 @@ input:focus,select:focus {
   align-items: center;
   gap: 10px;
   padding: 9px 0;
-  border-bottom: 1px solid #30223b;
+  border-bottom: 1px solid #292929;
   font-size: 13px;
 }
 
@@ -543,7 +556,7 @@ input:focus,select:focus {
 }
 
 .notice {
-  color: #a99ab6;
+  color: #aaa;
   font-size: 11px;
   line-height: 1.5;
   margin: 13px 0 0;
@@ -556,14 +569,14 @@ input:focus,select:focus {
   align-items: end;
   padding: 15px;
   margin-bottom: 16px;
-  border: 1px solid #57436a;
+  border: 1px solid #555;
   border-radius: 12px;
-  background: #140d1d;
+  background: #101010;
 }
 
 .login-status {
   grid-column: 1/-1;
-  color: #b8a8c7;
+  color: #bbb;
   font-size: 12px;
   margin: 0;
 }
@@ -572,7 +585,7 @@ input:focus,select:focus {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #b8a8c7;
+  color: #bbb;
   font-size: 11px;
   margin-top: 12px;
 }
@@ -593,15 +606,15 @@ input:focus,select:focus {
 
 footer {
   text-align: center;
-  color: #897b98;
+  color: #888;
   font-size: 11px;
   letter-spacing: .08em;
   margin-top: 30px;
 }
 
-footer strong { color: #c8a4e9; }
+footer strong { color: #fff; }
 
-/* RESPONSIVIDADE */
+/* CELULAR */
 
 @media (max-width:700px) {
   main { padding: 20px 14px 38px; }
@@ -643,7 +656,7 @@ footer strong { color: #c8a4e9; }
   .form-grid .wide { grid-column: auto; }
 }
 
-/* AJUSTE PARA TV E TELAS GRANDES */
+/* TV E TELAS GRANDES */
 
 @media (min-width:1100px) {
   main {
@@ -654,9 +667,8 @@ footer strong { color: #c8a4e9; }
   header { margin-bottom: 34px; }
 
   .alien {
-    width: 60px;
-    height: 60px;
-    font-size: 34px;
+    width: 64px;
+    height: 64px;
   }
 
   .brand { font-size: 22px; }
@@ -741,19 +753,61 @@ footer strong { color: #c8a4e9; }
     margin-top: 38px;
   }
 }
+
+/* ACESSIBILIDADE: REDUZ ANIMAÇÕES SE SOLICITADO */
+
+@media (prefers-reduced-motion: reduce) {
+  .place { transition: none; }
+}
 </style>
 </head>
 
 <body>
 <div id="app">
   <div class="bg-glow" aria-hidden="true"></div>
+  <canvas id="matrixCanvas" aria-hidden="true"></canvas>
 
   <main>
     <header>
       <div class="brand">
-        <div class="alien" aria-hidden="true">👽</div>
+        <div class="alien" aria-label="Símbolo AlienBot">
+          <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
+            <path
+              d="M50 5
+                 C27 5 13 22 12 47
+                 C11 64 19 81 32 91
+                 C39 96 61 96 68 91
+                 C81 81 89 64 88 47
+                 C87 22 73 5 50 5Z"
+              fill="#000"
+              stroke="#fff"
+              stroke-width="5"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M23 48
+                 C28 35 40 30 49 43
+                 C42 58 32 64 23 48Z"
+              fill="#fff"
+            />
+            <path
+              d="M77 48
+                 C72 35 60 30 51 43
+                 C58 58 68 64 77 48Z"
+              fill="#fff"
+            />
+            <path
+              d="M39 76 Q50 82 61 76"
+              fill="none"
+              stroke="#fff"
+              stroke-width="3"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
         <span>ALIENBOT</span>
       </div>
+
       <div class="tag">OBR · ROBÓTICA ARTÍSTICA</div>
     </header>
 
@@ -805,7 +859,7 @@ footer strong { color: #c8a4e9; }
         </thead>
         <tbody id="rankingRows">
           <tr>
-            <td colspan="3" style="text-align:center;color:#9f91aa;padding:24px">
+            <td colspan="3" style="text-align:center;color:#999;padding:24px">
               Aguardando o cadastro dos primeiros alunos.
             </td>
           </tr>
@@ -928,6 +982,106 @@ footer strong { color: #c8a4e9; }
 </div>
 
 <script>
+/* =====================================
+   EFEITO MATRIX - NÚMEROS BINÁRIOS
+===================================== */
+
+(function startMatrix() {
+  const canvas = document.getElementById('matrixCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let width = 0;
+  let height = 0;
+  let columns = [];
+  let fontSize = 13;
+  let animationId = null;
+  let lastFrame = 0;
+
+  const reducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+  function resizeMatrix() {
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+    width = window.innerWidth;
+    height = window.innerHeight;
+
+    canvas.width = Math.floor(width * ratio);
+    canvas.height = Math.floor(height * ratio);
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+    fontSize = width < 600 ? 11 : 13;
+
+    const count = Math.ceil(width / fontSize);
+
+    columns = Array.from({ length: count }, () => ({
+      y: Math.random() * height,
+      speed: 0.5 + Math.random() * 1.1
+    }));
+  }
+
+  function drawMatrix(timestamp) {
+    if (timestamp - lastFrame < 45) {
+      animationId = requestAnimationFrame(drawMatrix);
+      return;
+    }
+
+    lastFrame = timestamp;
+
+    ctx.fillStyle = 'rgba(5,5,5,0.09)';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.font = `${fontSize}px monospace`;
+
+    columns.forEach((column, index) => {
+      const digit = Math.random() > 0.5 ? '1' : '0';
+      const x = index * fontSize;
+      const y = column.y;
+
+      ctx.fillStyle = Math.random() > 0.96
+        ? 'rgba(255,255,255,0.75)'
+        : 'rgba(220,220,220,0.48)';
+
+      ctx.fillText(digit, x, y);
+
+      column.y += fontSize * column.speed;
+
+      if (column.y > height && Math.random() > 0.97) {
+        column.y = -Math.random() * 100;
+        column.speed = 0.5 + Math.random() * 1.1;
+      }
+    });
+
+    animationId = requestAnimationFrame(drawMatrix);
+  }
+
+  resizeMatrix();
+  window.addEventListener('resize', resizeMatrix);
+
+  if (!reducedMotion) {
+    animationId = requestAnimationFrame(drawMatrix);
+  } else {
+    ctx.clearRect(0, 0, width, height);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = null;
+    } else if (!reducedMotion && !animationId) {
+      animationId = requestAnimationFrame(drawMatrix);
+    }
+  });
+})();
+
+/* =====================================
+   SUPABASE E RANKING
+===================================== */
+
 const SUPABASE_URL = 'https://cfmvitinrefjjhmaxgky.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_UPgE31ZOc8tKJs2ecbEgug_cIzujE7i';
 const SESSION_KEY = 'alienbot-teacher-session-v1';
@@ -973,7 +1127,7 @@ function headers(token) {
   };
 }
 
-/* RENOVA AUTOMATICAMENTE A SESSÃO DO PROFESSOR */
+/* RENOVA AUTOMATICAMENTE A SESSÃO */
 
 async function refreshTeacherSession() {
   if (!session?.refresh_token) {
@@ -1016,7 +1170,7 @@ async function refreshTeacherSession() {
   return refreshPromise;
 }
 
-/* REQUISIÇÕES AO SUPABASE COM TENTATIVA DE RENOVAÇÃO */
+/* REQUISIÇÕES AO BANCO */
 
 async function api(path, options = {}) {
   const request = () => fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -1062,8 +1216,6 @@ async function api(path, options = {}) {
     throw new Error('O banco retornou uma resposta inválida.');
   }
 }
-
-/* CARREGAMENTO DOS ALUNOS */
 
 async function loadStudents() {
   students = await api(
@@ -1132,7 +1284,7 @@ async function login() {
   }
 }
 
-/* SAIR DA CONTA */
+/* LOGOUT */
 
 function logout() {
   session = null;
@@ -1145,7 +1297,7 @@ function logout() {
   $('teacherPassword').value = '';
 }
 
-/* CADASTRO E EDIÇÃO DE ALUNO */
+/* CADASTRO E EDIÇÃO */
 
 async function saveStudent() {
   const name = $('studentName').value.trim();
@@ -1202,7 +1354,7 @@ async function saveStudent() {
   }
 }
 
-/* LANÇAMENTO DE PONTOS */
+/* PONTUAÇÃO */
 
 async function applyScore() {
   const amount = Number($('scoreValue').value);
@@ -1244,15 +1396,13 @@ async function applyScore() {
   }
 }
 
-/* ATUALIZAÇÃO VISUAL DO RANKING */
+/* DESENHO DO RANKING */
 
 function render() {
   const ranking = sorted();
 
   const medals = ['🥇','🥈','🥉','🏅'];
   const labels = ['1º LUGAR','2º LUGAR','3º LUGAR','4º LUGAR'];
-
-  /* QUATRO PRIMEIROS COLOCADOS */
 
   $('podium').innerHTML = Array.from({ length: 4 }, (_, i) => {
     const s = ranking[i];
@@ -1276,17 +1426,15 @@ function render() {
   $('studentCount').textContent =
     `${students.length} ${students.length === 1 ? 'participante' : 'participantes'}`;
 
-  /* CLASSIFICAÇÃO GERAL E ZONA DE PERIGO */
+  /* QUATRO ÚLTIMOS COM ALERTA VERMELHO E PONTOS VISÍVEIS */
 
   $('rankingRows').innerHTML = ranking.length
     ? ranking.map((s, i) => {
-
         const danger = i >= ranking.length - 4;
 
         return `
           <tr class="${danger ? 'danger-zone' : ''}">
             <td class="rank-num">${i + 1}º</td>
-
             <td class="student-cell">
               ${escapeHTML(s.name)}
               ${
@@ -1295,31 +1443,29 @@ function render() {
                   : ''
               }
             </td>
-
             <td class="points-cell">
               ${s.points} ${s.points === 1 ? 'ponto' : 'pontos'}
             </td>
           </tr>
         `;
-
       }).join('')
     : `
       <tr>
         <td colspan="3"
-          style="text-align:center;color:#9f91aa;padding:24px">
+          style="text-align:center;color:#999;padding:24px">
           Aguardando o cadastro dos primeiros alunos.
         </td>
       </tr>
     `;
 
-  /* GERENCIAMENTO DE ALUNOS */
+  /* GERENCIAR ALUNOS */
 
   $('manageRows').innerHTML = ranking.length
     ? ranking.map(s => `
         <div class="manage-row">
           <span class="student-cell">
             ${escapeHTML(s.name)}
-            <span style="color:#a895b9;font-weight:600">
+            <span style="color:#aaa;font-weight:600">
               · ${s.points} pts
             </span>
           </span>
@@ -1339,7 +1485,7 @@ function render() {
     : '<p class="notice">Nenhum aluno cadastrado ainda.</p>';
 }
 
-/* EVENTOS DO PAINEL */
+/* EVENTOS */
 
 $('toggleAdmin').addEventListener('click', () => {
   const open = $('adminBody').classList.toggle('open');
@@ -1353,9 +1499,7 @@ $('teacherPassword').addEventListener('keydown', e => {
 });
 
 $('logoutButton').addEventListener('click', logout);
-
 $('saveStudent').addEventListener('click', saveStudent);
-
 $('applyScore').addEventListener('click', applyScore);
 
 /* SELEÇÃO E EXCLUSÃO */
@@ -1409,7 +1553,7 @@ $('manageRows').addEventListener('click', (event) => {
   }
 });
 
-/* PERFIL AO CLICAR NO PÓDIO */
+/* PERFIL DO ALUNO */
 
 $('podium').addEventListener('click', (event) => {
   const card = event.target.closest('[data-profile]');
@@ -1425,7 +1569,7 @@ $('podium').addEventListener('click', (event) => {
   $('profileRole').textContent = s.team_role || 'Não informada';
 
   $('profilePhoto').src = s.photo_url ||
-    'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 130 150%22%3E%3Crect width=%22130%22 height=%22150%22 fill=%22%23402b55%22/%3E%3Ccircle cx=%2265%22 cy=%2252%22 r=%2225%22 fill=%22%23b99bd3%22/%3E%3Cpath d=%22M18 145c3-35 20-53 47-53s44 18 47 53%22 fill=%22%23b99bd3%22/%3E%3C/svg%3E';
+    'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 130 150%22%3E%3Crect width=%22130%22 height=%22150%22 fill=%22%23303030%22/%3E%3Ccircle cx=%2265%22 cy=%2252%22 r=%2225%22 fill=%22%23bdbdbd%22/%3E%3Cpath d=%22M18 145c3-35 20-53 47-53s44 18 47 53%22 fill=%22%23bdbdbd%22/%3E%3C/svg%3E';
 
   $('profileOverlay').classList.add('open');
 });
@@ -1527,7 +1671,7 @@ async function start() {
     $('rankingRows').innerHTML = `
       <tr>
         <td colspan="3"
-          style="text-align:center;color:#f0b4bd;padding:24px">
+          style="text-align:center;color:#ddd;padding:24px">
           Não foi possível carregar o ranking.
           Verifique a conexão e as permissões públicas do Supabase.
         </td>
