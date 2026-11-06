@@ -61,6 +61,16 @@ body {
   opacity: .25;
 }
 
+/* CORREÇÃO: O CANVAS DOS CIRCUITOS NÃO DEVE EMPURRAR O CONTEÚDO */
+#circuitCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
 main {
   position: relative;
   z-index: 2;
@@ -791,13 +801,16 @@ h1 {
 }
 
 
-/* AJUSTE FINAL: MARCA ALIENBOT E IDENTIFICAÇÃO NO TOPO DA TELA */
-html, body, #app { margin-top: 0 !important; padding-top: 0 !important; }
-main { padding-top: 0 !important; margin-top: 0 !important; }
-main > header { margin-top: -34px !important; margin-bottom: 0 !important; }
-@media (max-width: 700px) {
-  main { padding-top: 0 !important; }
-  main > header { margin-top: -18px !important; }
+/* AJUSTE FINAL: CABEÇALHO SEM DESLOCAMENTO NEGATIVO */
+html, body, #app {
+  margin-top: 0 !important;
+}
+main {
+  margin-top: 0 !important;
+}
+main > header {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 </style>
 </head>
