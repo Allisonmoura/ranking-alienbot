@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -8,13 +7,13 @@
 
 <style>
 :root {
-  --site-primary: #ffffff;
+  --site-primary: #fff;
   --site-background: #050505;
-  --site-on-background: #ffffff;
-  --white: #ffffff;
+  --site-on-background: #fff;
+  --white: #fff;
   --muted: #a6a6a6;
-  --panel: #111111;
-  --border: #333333;
+  --panel: #111;
+  --border: #333;
   color-scheme: dark;
 }
 
@@ -36,7 +35,7 @@ body {
   overflow: hidden;
 }
 
-/* ILUMINAÇÃO MONOCROMÁTICA DO FUNDO */
+/* FUNDO MONOCROMÁTICO */
 
 .bg-glow {
   position: fixed;
@@ -49,7 +48,7 @@ body {
     radial-gradient(circle at 5% 85%, #ffffff08, transparent 28%);
 }
 
-/* EFEITO MATRIX */
+/* NÚMEROS BINÁRIOS */
 
 #matrixCanvas {
   position: fixed;
@@ -59,6 +58,18 @@ body {
   z-index: 1;
   pointer-events: none;
   opacity: .25;
+}
+
+/* CIRCUITOS ELETRÔNICOS HORIZONTAIS */
+
+#circuitCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .27;
 }
 
 main {
@@ -96,7 +107,8 @@ header {
   background: #000;
   border: 1.5px solid #fff;
   box-shadow: 0 0 22px #ffffff20;
-  padding: 5px;
+  padding: 4px;
+  flex-shrink: 0;
 }
 
 .alien svg {
@@ -754,7 +766,7 @@ footer strong { color: #fff; }
   }
 }
 
-/* ACESSIBILIDADE: REDUZ ANIMAÇÕES SE SOLICITADO */
+/* ACESSIBILIDADE */
 
 @media (prefers-reduced-motion: reduce) {
   .place { transition: none; }
@@ -764,47 +776,49 @@ footer strong { color: #fff; }
 
 <body>
 <div id="app">
+
   <div class="bg-glow" aria-hidden="true"></div>
   <canvas id="matrixCanvas" aria-hidden="true"></canvas>
+  <canvas id="circuitCanvas" aria-hidden="true"></canvas>
 
   <main>
     <header>
       <div class="brand">
+
+        <!-- NOVO ALIEN: CONTORNO BRANCO E OLHOS BRANCOS -->
         <div class="alien" aria-label="Símbolo AlienBot">
           <svg viewBox="0 0 100 100" role="img" aria-hidden="true">
             <path
               d="M50 5
-                 C27 5 13 22 12 47
-                 C11 64 19 81 32 91
-                 C39 96 61 96 68 91
-                 C81 81 89 64 88 47
-                 C87 22 73 5 50 5Z"
+                 C25 5 12 23 12 48
+                 C12 66 23 82 39 91
+                 C44 94 56 94 61 91
+                 C77 82 88 66 88 48
+                 C88 23 75 5 50 5Z"
               fill="#000"
               stroke="#fff"
-              stroke-width="5"
+              stroke-width="4.5"
               stroke-linejoin="round"
             />
+
             <path
-              d="M23 48
-                 C28 35 40 30 49 43
-                 C42 58 32 64 23 48Z"
+              d="M21 43
+                 C24 30 37 25 48 39
+                 C57 51 55 65 44 72
+                 C33 78 20 64 21 43Z"
               fill="#fff"
             />
+
             <path
-              d="M77 48
-                 C72 35 60 30 51 43
-                 C58 58 68 64 77 48Z"
+              d="M79 43
+                 C76 30 63 25 52 39
+                 C43 51 45 65 56 72
+                 C67 78 80 64 79 43Z"
               fill="#fff"
-            />
-            <path
-              d="M39 76 Q50 82 61 76"
-              fill="none"
-              stroke="#fff"
-              stroke-width="3"
-              stroke-linecap="round"
             />
           </svg>
         </div>
+
         <span>ALIENBOT</span>
       </div>
 
@@ -814,10 +828,12 @@ footer strong { color: #fff; }
     <section class="hero">
       <div class="kicker">Desafio de conhecimento e dedicação</div>
       <h1><span class="gradient">RANKING</span><br>ALIENBOT</h1>
+
       <p class="subtitle">
         Cada desafio é uma oportunidade de evoluir. Estude, pratique,
         some pontos e conquiste seu lugar no pódio!
       </p>
+
       <div class="score-note">
         🏆 <span>Os quatro primeiros colocados da equipe</span>
       </div>
@@ -829,6 +845,7 @@ footer strong { color: #fff; }
 
     <div class="profile-overlay" id="profileOverlay"
          role="dialog" aria-modal="true" aria-labelledby="profileName">
+
       <div class="profile-card">
         <button class="profile-close" id="closeProfile"
                 type="button" aria-label="Fechar">×</button>
@@ -857,6 +874,7 @@ footer strong { color: #fff; }
             <th>Pontos</th>
           </tr>
         </thead>
+
         <tbody id="rankingRows">
           <tr>
             <td colspan="3" style="text-align:center;color:#999;padding:24px">
@@ -873,10 +891,14 @@ footer strong { color: #fff; }
           <h2>⚙️ ÁREA DO PROFESSOR</h2>
           <p>Cadastre alunos e atualize a pontuação.</p>
         </div>
-        <button class="toggle" id="toggleAdmin" type="button">Abrir painel</button>
+
+        <button class="toggle" id="toggleAdmin" type="button">
+          Abrir painel
+        </button>
       </div>
 
       <div class="admin-body" id="adminBody">
+
         <div class="login-box" id="loginBox">
           <div class="field">
             <label for="teacherEmail">E-MAIL DO PROFESSOR</label>
@@ -892,7 +914,9 @@ footer strong { color: #fff; }
                    placeholder="Senha da conta">
           </div>
 
-          <button class="primary-btn" id="loginButton" type="button">Entrar</button>
+          <button class="primary-btn" id="loginButton" type="button">
+            Entrar
+          </button>
 
           <p class="login-status" id="loginStatus">
             Entre com a conta de professor já cadastrada no Supabase
@@ -901,6 +925,7 @@ footer strong { color: #fff; }
         </div>
 
         <div class="admin-tools" id="adminTools" hidden>
+
           <div class="form-grid">
             <div class="field wide">
               <label for="studentName">NOME DO ALUNO</label>
@@ -940,10 +965,22 @@ footer strong { color: #fff; }
           </div>
 
           <div class="admin-actions">
-            <button class="primary-btn" id="saveStudent" type="button">Cadastrar aluno</button>
-            <button class="secondary-btn" id="applyScore" type="button">Lançar pontos</button>
-            <button class="secondary-btn" id="exportData" type="button">Exportar dados</button>
-            <button class="secondary-btn" id="importButton" type="button">Importar dados</button>
+            <button class="primary-btn" id="saveStudent" type="button">
+              Cadastrar aluno
+            </button>
+
+            <button class="secondary-btn" id="applyScore" type="button">
+              Lançar pontos
+            </button>
+
+            <button class="secondary-btn" id="exportData" type="button">
+              Exportar dados
+            </button>
+
+            <button class="secondary-btn" id="importButton" type="button">
+              Importar dados
+            </button>
+
             <input id="importFile" type="file" accept="application/json" hidden>
           </div>
 
@@ -952,13 +989,16 @@ footer strong { color: #fff; }
               <h2>GERENCIAR ALUNOS</h2>
               <span class="count">Selecione um aluno para lançar pontos</span>
             </div>
+
             <div id="manageRows">
               <p class="notice">Nenhum aluno cadastrado ainda.</p>
             </div>
           </div>
 
           <div class="admin-actions">
-            <button class="secondary-btn" id="logoutButton" type="button">Sair da conta</button>
+            <button class="secondary-btn" id="logoutButton" type="button">
+              Sair da conta
+            </button>
           </div>
 
           <p class="notice">
@@ -982,9 +1022,10 @@ footer strong { color: #fff; }
 </div>
 
 <script>
-/* =====================================
+
+/* =========================================
    EFEITO MATRIX - NÚMEROS BINÁRIOS
-===================================== */
+========================================= */
 
 (function startMatrix() {
   const canvas = document.getElementById('matrixCanvas');
@@ -1009,6 +1050,7 @@ footer strong { color: #fff; }
 
     canvas.width = Math.floor(width * ratio);
     canvas.height = Math.floor(height * ratio);
+
     canvas.style.width = width + 'px';
     canvas.style.height = height + 'px';
 
@@ -1078,9 +1120,229 @@ footer strong { color: #fff; }
   });
 })();
 
-/* =====================================
+
+/* =========================================
+   CIRCUITOS ELETRÔNICOS HORIZONTAIS
+========================================= */
+
+(function startCircuits() {
+  const canvas = document.getElementById('circuitCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let width = 0;
+  let height = 0;
+  let circuits = [];
+  let animationId = null;
+  let lastFrame = 0;
+
+  const reducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+  /*
+    Cada circuito possui:
+    - posição horizontal;
+    - altura na tela;
+    - velocidade;
+    - tamanho;
+    - direção;
+    - pontos de conexão.
+  */
+
+  function createCircuit(startRandom = true) {
+    const y = Math.random() * height;
+
+    return {
+      x: startRandom ? Math.random() * width : -180,
+      y: y,
+      speed: 0.45 + Math.random() * 0.85,
+      length: 90 + Math.random() * 180,
+      amplitude: 12 + Math.random() * 35,
+      direction: Math.random() > 0.5 ? 1 : -1,
+      opacity: 0.25 + Math.random() * 0.55,
+      pulse: Math.random() * Math.PI * 2,
+      thickness: Math.random() > 0.7 ? 1.8 : 1
+    };
+  }
+
+  function resizeCircuits() {
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+    width = window.innerWidth;
+    height = window.innerHeight;
+
+    canvas.width = Math.floor(width * ratio);
+    canvas.height = Math.floor(height * ratio);
+
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+    const quantity = Math.max(8, Math.min(22, Math.floor(width / 65)));
+
+    circuits = Array.from(
+      { length: quantity },
+      () => createCircuit(true)
+    );
+  }
+
+  function drawCircuit(circuit, timestamp) {
+    const x = circuit.x;
+    const y = circuit.y;
+    const length = circuit.length;
+    const amplitude = circuit.amplitude;
+
+    const direction = circuit.direction;
+
+    const pulse = (Math.sin(timestamp * 0.002 + circuit.pulse) + 1) / 2;
+
+    const glow = 0.35 + pulse * 0.65;
+
+    ctx.save();
+
+    ctx.lineWidth = circuit.thickness;
+    ctx.strokeStyle = `rgba(235,235,235,${circuit.opacity * glow})`;
+    ctx.fillStyle = `rgba(255,255,255,${circuit.opacity * glow})`;
+
+    ctx.shadowColor = 'rgba(255,255,255,0.8)';
+    ctx.shadowBlur = 5 + pulse * 8;
+
+    ctx.beginPath();
+
+    /*
+      Traçado eletrônico com linhas horizontais,
+      curvas de 90 graus e pequenas ramificações.
+    */
+
+    ctx.moveTo(x, y);
+
+    ctx.lineTo(x + length * 0.25, y);
+
+    ctx.lineTo(
+      x + length * 0.25,
+      y + amplitude * direction
+    );
+
+    ctx.lineTo(
+      x + length * 0.65,
+      y + amplitude * direction
+    );
+
+    ctx.lineTo(
+      x + length * 0.65,
+      y + amplitude * direction * 0.35
+    );
+
+    ctx.lineTo(x + length, y + amplitude * direction * 0.35);
+
+    ctx.stroke();
+
+    /* Ramificação superior/inferior */
+
+    ctx.beginPath();
+
+    ctx.moveTo(x + length * 0.45, y);
+
+    ctx.lineTo(
+      x + length * 0.45,
+      y - amplitude * 0.65 * direction
+    );
+
+    ctx.lineTo(
+      x + length * 0.82,
+      y - amplitude * 0.65 * direction
+    );
+
+    ctx.stroke();
+
+    /* Pontos luminosos nas conexões */
+
+    const points = [
+      [x, y],
+      [x + length * 0.25, y],
+      [x + length * 0.25, y + amplitude * direction],
+      [x + length * 0.65, y + amplitude * direction],
+      [x + length, y + amplitude * direction * 0.35],
+      [x + length * 0.45, y - amplitude * 0.65 * direction],
+      [x + length * 0.82, y - amplitude * 0.65 * direction]
+    ];
+
+    points.forEach(([px, py], index) => {
+      const radius = index === 0 || index === 4 ? 2.2 : 1.5;
+
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    /* Pequeno pulso luminoso percorrendo o circuito */
+
+    const progress = (timestamp * 0.00025 + circuit.pulse) % 1;
+
+    const pulseX = x + length * progress;
+    const pulseY = y;
+
+    ctx.beginPath();
+    ctx.arc(pulseX, pulseY, 2.8, 0, Math.PI * 2);
+
+    ctx.fillStyle = `rgba(255,255,255,${0.35 + pulse * 0.65})`;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawCircuits(timestamp) {
+    if (timestamp - lastFrame < 35) {
+      animationId = requestAnimationFrame(drawCircuits);
+      return;
+    }
+
+    lastFrame = timestamp;
+
+    ctx.clearRect(0, 0, width, height);
+
+    circuits.forEach(circuit => {
+      drawCircuit(circuit, timestamp);
+
+      circuit.x += circuit.speed * circuit.direction;
+
+      if (circuit.direction === 1 && circuit.x > width + circuit.length) {
+        circuit.x = -circuit.length - 50;
+        circuit.y = Math.random() * height;
+      }
+
+      if (circuit.direction === -1 && circuit.x < -circuit.length - 50) {
+        circuit.x = width + 50;
+        circuit.y = Math.random() * height;
+      }
+    });
+
+    animationId = requestAnimationFrame(drawCircuits);
+  }
+
+  resizeCircuits();
+
+  window.addEventListener('resize', resizeCircuits);
+
+  if (!reducedMotion) {
+    animationId = requestAnimationFrame(drawCircuits);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = null;
+    } else if (!reducedMotion && !animationId) {
+      animationId = requestAnimationFrame(drawCircuits);
+    }
+  });
+})();
+
+
+/* =========================================
    SUPABASE E RANKING
-===================================== */
+========================================= */
 
 const SUPABASE_URL = 'https://cfmvitinrefjjhmaxgky.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_UPgE31ZOc8tKJs2ecbEgug_cIzujE7i';
@@ -1127,7 +1389,10 @@ function headers(token) {
   };
 }
 
-/* RENOVA AUTOMATICAMENTE A SESSÃO */
+
+/* =========================================
+   RENOVAÇÃO AUTOMÁTICA DA SESSÃO
+========================================= */
 
 async function refreshTeacherSession() {
   if (!session?.refresh_token) {
@@ -1159,7 +1424,11 @@ async function refreshTeacherSession() {
       }
 
       session = data;
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+      localStorage.setItem(
+        SESSION_KEY,
+        JSON.stringify(session)
+      );
 
       return session;
     })().finally(() => {
@@ -1170,16 +1439,22 @@ async function refreshTeacherSession() {
   return refreshPromise;
 }
 
-/* REQUISIÇÕES AO BANCO */
+
+/* =========================================
+   REQUISIÇÕES AO BANCO
+========================================= */
 
 async function api(path, options = {}) {
-  const request = () => fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    ...options,
-    headers: {
-      ...headers(session?.access_token),
-      ...(options.headers || {})
+  const request = () => fetch(
+    `${SUPABASE_URL}/rest/v1/${path}`,
+    {
+      ...options,
+      headers: {
+        ...headers(session?.access_token),
+        ...(options.headers || {})
+      }
     }
-  });
+  );
 
   let response = await request();
   let body = await response.text();
@@ -1198,6 +1473,7 @@ async function api(path, options = {}) {
 
     } catch (error) {
       logout();
+
       throw new Error(
         'Sua sessão expirou. Entre novamente na conta do professor.'
       );
@@ -1217,14 +1493,17 @@ async function api(path, options = {}) {
   }
 }
 
+
 async function loadStudents() {
   students = await api(
     'alienbot_students?select=id,name,points,school_year,team_role,photo_url&order=points.desc,name.asc'
   );
 
   render();
+
   setConnection(true, 'Banco de dados conectado');
 }
+
 
 function setAdminState(loggedIn) {
   $('loginBox').hidden = loggedIn;
@@ -1235,7 +1514,10 @@ function setAdminState(loggedIn) {
     : 'Entre com a conta de professor já cadastrada no Supabase para gerenciar a pontuação.';
 }
 
-/* LOGIN */
+
+/* =========================================
+   LOGIN
+========================================= */
 
 async function login() {
   const email = $('teacherEmail').value.trim();
@@ -1265,26 +1547,38 @@ async function login() {
     const data = await r.json();
 
     if (!r.ok) {
-      throw new Error(data.msg || data.message || 'E-mail ou senha inválidos.');
+      throw new Error(
+        data.msg || data.message || 'E-mail ou senha inválidos.'
+      );
     }
 
     session = data;
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify(session)
+    );
 
     setAdminState(true);
+
     $('teacherPassword').value = '';
     $('loginStatus').textContent = 'Acesso autorizado.';
 
     await loadStudents();
 
   } catch (e) {
-    $('loginStatus').textContent = `Não foi possível entrar: ${e.message}`;
+    $('loginStatus').textContent =
+      `Não foi possível entrar: ${e.message}`;
+
   } finally {
     $('loginButton').disabled = false;
   }
 }
 
-/* LOGOUT */
+
+/* =========================================
+   LOGOUT
+========================================= */
 
 function logout() {
   session = null;
@@ -1293,11 +1587,15 @@ function logout() {
   localStorage.removeItem(SESSION_KEY);
 
   setAdminState(false);
+
   $('teacherEmail').value = '';
   $('teacherPassword').value = '';
 }
 
-/* CADASTRO E EDIÇÃO */
+
+/* =========================================
+   CADASTRO E EDIÇÃO DE ALUNOS
+========================================= */
 
 async function saveStudent() {
   const name = $('studentName').value.trim();
@@ -1344,6 +1642,7 @@ async function saveStudent() {
     $('studentPhoto').value = '';
 
     selectedId = null;
+
     $('saveStudent').textContent = 'Cadastrar aluno';
     $('applyScore').textContent = 'Lançar pontos';
 
@@ -1354,7 +1653,10 @@ async function saveStudent() {
   }
 }
 
-/* PONTUAÇÃO */
+
+/* =========================================
+   PONTUAÇÃO
+========================================= */
 
 async function applyScore() {
   const amount = Number($('scoreValue').value);
@@ -1389,20 +1691,27 @@ async function applyScore() {
 
     await loadStudents();
 
-    alert(`Pontuação atualizada: ${s.name} agora tem ${points} pontos.`);
+    alert(
+      `Pontuação atualizada: ${s.name} agora tem ${points} pontos.`
+    );
 
   } catch (e) {
     alert(`Não foi possível atualizar: ${e.message}`);
   }
 }
 
-/* DESENHO DO RANKING */
+
+/* =========================================
+   DESENHO DO RANKING
+========================================= */
 
 function render() {
   const ranking = sorted();
 
   const medals = ['🥇','🥈','🥉','🏅'];
   const labels = ['1º LUGAR','2º LUGAR','3º LUGAR','4º LUGAR'];
+
+  /* PÓDIO */
 
   $('podium').innerHTML = Array.from({ length: 4 }, (_, i) => {
     const s = ranking[i];
@@ -1411,22 +1720,33 @@ function render() {
       <article class="place ${i === 0 ? 'first' : ''}"
         ${s ? `data-profile="${s.id}" role="button" tabindex="0"
         aria-label="Ver perfil de ${escapeHTML(s.name)}"` : ''}>
+
         <div class="medal">${medals[i]}</div>
+
         <div class="place-label">${labels[i]}</div>
+
         ${
           s
             ? `<div class="student-name">${escapeHTML(s.name)}</div>
-               <div class="points">${s.points} ${s.points === 1 ? 'ponto' : 'pontos'}</div>`
+               <div class="points">
+                 ${s.points} ${s.points === 1 ? 'ponto' : 'pontos'}
+               </div>`
             : '<div class="empty">Aguardando aluno</div>'
         }
       </article>
     `;
   }).join('');
 
-  $('studentCount').textContent =
-    `${students.length} ${students.length === 1 ? 'participante' : 'participantes'}`;
 
-  /* QUATRO ÚLTIMOS COM ALERTA VERMELHO E PONTOS VISÍVEIS */
+  /* CONTADOR */
+
+  $('studentCount').textContent =
+    `${students.length} ${
+      students.length === 1 ? 'participante' : 'participantes'
+    }`;
+
+
+  /* CLASSIFICAÇÃO E ZONA DE PERIGO */
 
   $('rankingRows').innerHTML = ranking.length
     ? ranking.map((s, i) => {
@@ -1434,21 +1754,27 @@ function render() {
 
         return `
           <tr class="${danger ? 'danger-zone' : ''}">
+
             <td class="rank-num">${i + 1}º</td>
+
             <td class="student-cell">
               ${escapeHTML(s.name)}
+
               ${
                 danger
                   ? '<span class="danger-label">⚠ ZONA DE PERIGO</span>'
                   : ''
               }
             </td>
+
             <td class="points-cell">
               ${s.points} ${s.points === 1 ? 'ponto' : 'pontos'}
             </td>
+
           </tr>
         `;
       }).join('')
+
     : `
       <tr>
         <td colspan="3"
@@ -1458,13 +1784,16 @@ function render() {
       </tr>
     `;
 
+
   /* GERENCIAR ALUNOS */
 
   $('manageRows').innerHTML = ranking.length
     ? ranking.map(s => `
         <div class="manage-row">
+
           <span class="student-cell">
             ${escapeHTML(s.name)}
+
             <span style="color:#aaa;font-weight:600">
               · ${s.points} pts
             </span>
@@ -1480,16 +1809,23 @@ function render() {
             aria-label="Excluir ${escapeHTML(s.name)}">
             Excluir
           </button>
+
         </div>
       `).join('')
+
     : '<p class="notice">Nenhum aluno cadastrado ainda.</p>';
 }
 
-/* EVENTOS */
+
+/* =========================================
+   EVENTOS DO PAINEL
+========================================= */
 
 $('toggleAdmin').addEventListener('click', () => {
   const open = $('adminBody').classList.toggle('open');
-  $('toggleAdmin').textContent = open ? 'Fechar painel' : 'Abrir painel';
+
+  $('toggleAdmin').textContent =
+    open ? 'Fechar painel' : 'Abrir painel';
 });
 
 $('loginButton').addEventListener('click', login);
@@ -1502,7 +1838,10 @@ $('logoutButton').addEventListener('click', logout);
 $('saveStudent').addEventListener('click', saveStudent);
 $('applyScore').addEventListener('click', applyScore);
 
-/* SELEÇÃO E EXCLUSÃO */
+
+/* =========================================
+   SELEÇÃO E EXCLUSÃO DE ALUNOS
+========================================= */
 
 $('manageRows').addEventListener('click', (event) => {
   const select = event.target.closest('[data-select]');
@@ -1519,6 +1858,7 @@ $('manageRows').addEventListener('click', (event) => {
     $('studentPhoto').value = s?.photo_url || '';
 
     $('saveStudent').textContent = 'Salvar perfil';
+
     $('applyScore').textContent = s
       ? `Lançar pontos para ${s.name}`
       : 'Lançar pontos';
@@ -1542,18 +1882,24 @@ $('manageRows').addEventListener('click', (event) => {
       .then(() => {
         if (selectedId === s.id) {
           selectedId = null;
+
           $('saveStudent').textContent = 'Cadastrar aluno';
           $('applyScore').textContent = 'Lançar pontos';
         }
 
         return loadStudents();
       })
-      .catch(e => alert(`Não foi possível excluir: ${e.message}`));
+      .catch(e => {
+        alert(`Não foi possível excluir: ${e.message}`);
+      });
     }
   }
 });
 
-/* PERFIL DO ALUNO */
+
+/* =========================================
+   PERFIL DO ALUNO
+========================================= */
 
 $('podium').addEventListener('click', (event) => {
   const card = event.target.closest('[data-profile]');
@@ -1594,7 +1940,10 @@ $('profileOverlay').addEventListener('click', (event) => {
   }
 });
 
-/* EXPORTAÇÃO */
+
+/* =========================================
+   EXPORTAÇÃO DE DADOS
+========================================= */
 
 $('exportData').addEventListener('click', () => {
   const blob = new Blob(
@@ -1612,7 +1961,10 @@ $('exportData').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-/* IMPORTAÇÃO */
+
+/* =========================================
+   IMPORTAÇÃO DE DADOS
+========================================= */
 
 $('importButton').addEventListener('click', () => {
   $('importFile').click();
@@ -1628,7 +1980,10 @@ $('importFile').addEventListener('change', async (event) => {
 
     if (
       !Array.isArray(data) ||
-      data.some(s => typeof s.name !== 'string' || !Number.isFinite(s.points))
+      data.some(s =>
+        typeof s.name !== 'string' ||
+        !Number.isFinite(s.points)
+      )
     ) {
       throw new Error('Arquivo inválido.');
     }
@@ -1657,7 +2012,10 @@ $('importFile').addEventListener('change', async (event) => {
   event.target.value = '';
 });
 
-/* INICIALIZAÇÃO */
+
+/* =========================================
+   INICIALIZAÇÃO
+========================================= */
 
 async function start() {
   setAdminState(false);
@@ -1691,6 +2049,7 @@ async function start() {
 }
 
 start();
+
 </script>
 </body>
 </html>
