@@ -1094,6 +1094,15 @@ main > header {
 .student-pin-actions{display:grid;grid-template-columns:1.6fr 1fr auto;gap:10px;margin-top:12px;align-items:end}
 .student-pin-actions button{min-height:43px;color:#061923;background:#90deff}
 @media(max-width:680px){.student-pin-actions{grid-template-columns:1fr}}
+/* Acesso do aluno abaixo de OBR · RESGATE/ARTÍSTICA no cabeçalho */
+.header-user-stack{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:7px;flex:0 1 auto;min-width:0}
+.header-user-stack .tag{white-space:nowrap}
+.header-user-stack .student-login-strip{display:flex;flex-direction:row;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:6px;max-width:310px;width:auto;border:0;border-radius:0;background:transparent;padding:0;margin:0;font-size:11px;text-align:right}
+.header-user-stack .student-login-strip button{padding:6px 10px;font-size:11px;white-space:nowrap;border-radius:9px}
+.header-user-stack #studentWelcome{max-width:220px;color:#8de6ff;font-size:11px;font-weight:750;overflow-wrap:anywhere}
+.header-user-stack #studentWelcome[hidden]{display:none!important}
+.student-pin-actions{grid-template-columns:minmax(0,1fr) auto}
+@media(max-width:680px){.header-user-stack{gap:5px}.header-user-stack .tag{font-size:9px;padding:6px 8px}.header-user-stack .student-login-strip{max-width:210px}.header-user-stack .student-login-strip button{font-size:10px;padding:6px 8px}.header-user-stack #studentWelcome{max-width:195px;font-size:10px}.student-pin-actions{grid-template-columns:1fr}}
 </style>
 </head>
 
@@ -1112,14 +1121,15 @@ main > header {
         <button id="manualRedQuestButton" class="red-quest-button manual-quest-button" type="button" aria-label="Abrir QUEST Azul liberada pelo professor" title="QUEST Azul especial do professor" hidden>👽</button>
       </div>
 
-      <div class="tag">OBR · RESGATE/ARTÍSTICA</div>
+      <div class="header-user-stack">
+        <div class="tag">OBR · RESGATE/ARTÍSTICA</div>
+        <div class="student-login-strip" aria-live="polite">
+          <span id="studentWelcome" hidden></span>
+          <button id="studentLoginToggle" type="button">👤 Entrar como aluno</button>
+          <button id="studentLogoutButton" type="button" hidden>Sair</button>
+        </div>
+      </div>
     </header>
-
-    <div class="student-login-strip" aria-live="polite">
-      <span id="studentWelcome">👤 Para participar das QUESTs, entre com seu cadastro de aluno.</span>
-      <button id="studentLoginToggle" type="button">Entrar como aluno</button>
-      <button id="studentLogoutButton" type="button" hidden>Sair do cadastro</button>
-    </div>
 
     <section class="hero">
       <div class="kicker">Painel Avaliativo</div>
@@ -1143,13 +1153,31 @@ main > header {
         <button id="closeStudentLogin" class="quest-close" type="button" aria-label="Fechar">×</button>
         <div class="quest-emblem" aria-hidden="true">👽</div>
         <h2 id="studentLoginTitle">ENTRAR COMO ALUNO</h2>
-        <p class="quest-description">Seu nome precisa estar cadastrado no ranking, e o professor deve ter criado seu PIN. Entre uma vez para participar sem digitar o nome nas QUESTs.</p>
+        <p class="quest-description">Selecione seu nome no ranking. No primeiro acesso, o PIN é <strong>000000</strong>. Depois você deverá criar seu PIN pessoal antes de participar das QUESTs.</p>
         <label class="quest-label" for="studentLoginStudent">Seu nome no ranking</label>
         <select id="studentLoginStudent"><option value="">Selecione seu cadastro...</option></select>
         <label class="quest-label" for="studentLoginPin" style="margin-top:13px">PIN do aluno (6 números)</label>
-        <input id="studentLoginPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9]{6}" placeholder="PIN de 6 números">
+        <input id="studentLoginPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9]{6}" placeholder="Primeiro acesso: 000000">
         <button id="studentLoginButton" class="quest-claim" type="button">ENTRAR E PARTICIPAR</button>
         <p id="studentLoginMessage" class="quest-message" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <!-- No primeiro login, o PIN provisório deve ser trocado ANTES de qualquer QUEST. -->
+    <div class="quest-overlay" id="studentChangePinOverlay" role="dialog" aria-modal="true" aria-labelledby="studentChangePinTitle" hidden>
+      <div class="quest-card student-login-card">
+        <div class="quest-emblem" aria-hidden="true">🔐</div>
+        <p class="quest-eyebrow">SEGURANÇA DA CONTA</p>
+        <h2 id="studentChangePinTitle">CRIE SEU PIN PESSOAL</h2>
+        <p class="quest-description">Este é seu primeiro acesso. Para proteger seus pontos, troque o PIN provisório <strong>000000</strong> por um código pessoal de 6 números. A troca é obrigatória para liberar as QUESTs.</p>
+        <p id="studentChangePinName" class="student-registered-name"></p>
+        <label class="quest-label" for="studentNewPin">Novo PIN (6 números)</label>
+        <input id="studentNewPin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]{6}" placeholder="Crie um PIN diferente de 000000">
+        <label class="quest-label" for="studentConfirmPin" style="margin-top:13px">Confirmar novo PIN</label>
+        <input id="studentConfirmPin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6" pattern="[0-9]{6}" placeholder="Repita seu novo PIN">
+        <button id="studentChangePinSubmit" class="quest-claim" type="button">SALVAR PIN E CONTINUAR</button>
+        <button id="studentChangePinLogout" class="secondary-btn" type="button" style="margin-top:10px;width:100%">Sair sem alterar</button>
+        <p id="studentChangePinMessage" class="quest-message" role="status" aria-live="polite"></p>
       </div>
     </div>
 
@@ -1303,17 +1331,13 @@ main > header {
         <div class="admin-tools" id="adminTools" hidden>
           <div class="student-pin-admin">
             <strong>🔐 ACESSO DOS ALUNOS ÀS QUESTS</strong>
-            <p class="notice">Selecione um aluno já cadastrado e defina um PIN individual de 6 números. Ele entrará uma vez e poderá responder às três QUESTs sem digitar o nome. Trocar o PIN desconecta os dispositivos anteriores.</p>
+            <p class="notice">Todos os alunos cadastrados recebem automaticamente o PIN provisório <strong>000000</strong> e precisam mudá-lo no primeiro acesso. Se um aluno esquecer o código, selecione-o abaixo e redefina para 000000. Isso desconecta seus aparelhos antigos.</p>
             <div class="student-pin-actions">
               <div class="field">
                 <label for="teacherPinStudent">ALUNO CADASTRADO</label>
                 <select id="teacherPinStudent"><option value="">Selecione...</option></select>
               </div>
-              <div class="field">
-                <label for="teacherStudentPin">PIN (6 NÚMEROS)</label>
-                <input id="teacherStudentPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9]{6}" placeholder="Ex.: 482731">
-              </div>
-              <button id="teacherSaveStudentPin" type="button">SALVAR PIN</button>
+              <button id="teacherSaveStudentPin" type="button">↻ REDEFINIR PIN PARA 000000</button>
             </div>
             <p class="notice" id="teacherPinStatus" role="status"></p>
           </div>
@@ -1633,10 +1657,14 @@ function fillStudentSelectors() {
 }
 function showStudentIdentity() {
   const hasStudent = Boolean(studentAccount?.session_token);
-  $('studentWelcome').textContent = hasStudent
-    ? `👤 Aluno conectado: ${studentAccount.student_name}`
-    : '👤 Para participar das QUESTs, entre com seu cadastro de aluno.';
-  $('studentLoginToggle').hidden = hasStudent;
+  const mustChangePin = hasStudent && Boolean(studentAccount.must_change_pin);
+  const welcome = $('studentWelcome');
+  welcome.hidden = !hasStudent;
+  welcome.textContent = mustChangePin
+    ? `🔐 ${studentAccount.student_name}: crie seu PIN`
+    : hasStudent ? `👤 ${studentAccount.student_name}` : '';
+  $('studentLoginToggle').hidden = hasStudent && !mustChangePin;
+  $('studentLoginToggle').textContent = mustChangePin ? '🔐 Trocar PIN' : '👤 Entrar como aluno';
   $('studentLogoutButton').hidden = !hasStudent;
 }
 function openStudentLogin(questToOpen=null) {
@@ -1651,10 +1679,33 @@ function closeStudentLogin() {
   $('studentLoginOverlay').hidden = true;
   pendingStudentQuest = null;
 }
+function openStudentChangePin(questToOpen=null) {
+  if (questToOpen) pendingStudentQuest = questToOpen;
+  if (!studentAccount?.session_token) {openStudentLogin(questToOpen);return;}
+  $('studentChangePinName').textContent = `👤 ${studentAccount.student_name}`;
+  $('studentNewPin').value = '';
+  $('studentConfirmPin').value = '';
+  $('studentChangePinMessage').textContent = '';
+  $('studentChangePinOverlay').hidden = false;
+  $('studentNewPin').focus();
+}
 function requireStudentLogin(questToOpen) {
-  if (studentAccount?.session_token) return true;
-  openStudentLogin(questToOpen);
-  return false;
+  if (!studentAccount?.session_token) {
+    openStudentLogin(questToOpen);
+    return false;
+  }
+  if (studentAccount.must_change_pin) {
+    openStudentChangePin(questToOpen);
+    return false;
+  }
+  return true;
+}
+function continueAfterStudentAccess() {
+  const requested = pendingStudentQuest;
+  pendingStudentQuest = null;
+  if (requested === 'gold') openQuestModal();
+  else if (requested === 'auto' || requested === 'manual') openRedQuestModal(requested);
+  else showQuestFeedback(`👽 Bem-vindo(a), ${studentAccount.student_name}!`,'blue');
 }
 async function restoreStudentLogin() {
   if (!studentAccount?.session_token) {studentAccount=null;showStudentIdentity();return;}
@@ -1665,12 +1716,14 @@ async function restoreStudentLogin() {
     if (!result?.authenticated) throw new Error('Sessão expirada');
     studentAccount.student_id = result.student_id;
     studentAccount.student_name = result.student_name;
+    studentAccount.must_change_pin = Boolean(result.must_change_pin);
     localStorage.setItem(STUDENT_SESSION_KEY,JSON.stringify(studentAccount));
   } catch (_error) {
     studentAccount = null;
     localStorage.removeItem(STUDENT_SESSION_KEY);
   }
   showStudentIdentity();
+  if (studentAccount?.must_change_pin) openStudentChangePin();
 }
 async function loginStudent() {
   const studentId = $('studentLoginStudent').value;
@@ -1689,23 +1742,68 @@ async function loginStudent() {
       student_id:result.student_id,
       student_name:result.student_name,
       session_token:result.session_token,
-      expires_at:result.expires_at
+      expires_at:result.expires_at,
+      must_change_pin:Boolean(result.must_change_pin)
     };
     localStorage.setItem(STUDENT_SESSION_KEY,JSON.stringify(studentAccount));
     showStudentIdentity();
     const requested = pendingStudentQuest;
     closeStudentLogin();
-    if (requested === 'gold') openQuestModal();
-    else if (requested === 'auto' || requested === 'manual') openRedQuestModal(requested);
-    else showQuestFeedback(`👽 Bem-vindo(a), ${studentAccount.student_name}!`,'blue');
+    if (studentAccount.must_change_pin) {
+      openStudentChangePin(requested);
+    } else {
+      pendingStudentQuest = requested;
+      continueAfterStudentAccess();
+    }
   } catch (error) {
     $('studentLoginMessage').textContent=error.message || 'Não foi possível entrar.';
+  } finally {button.disabled=false;}
+}
+async function studentChangePin() {
+  if (!studentAccount?.session_token) { openStudentLogin(); return; }
+  const pin=$('studentNewPin').value.trim();
+  const confirmation=$('studentConfirmPin').value.trim();
+  if (!/^[0-9]{6}$/.test(pin)) {
+    $('studentChangePinMessage').textContent='Seu novo PIN deve conter exatamente 6 números.';
+    return;
+  }
+  if (pin === '000000') {
+    $('studentChangePinMessage').textContent='Escolha outro código. O PIN 000000 é apenas provisório.';
+    return;
+  }
+  if (pin !== confirmation) {
+    $('studentChangePinMessage').textContent='Os códigos não conferem. Digite novamente.';
+    return;
+  }
+  const button=$('studentChangePinSubmit');
+  button.disabled=true;
+  $('studentChangePinMessage').textContent='Salvando seu PIN com segurança...';
+  try {
+    const result=await questRpc('alienbot_student_change_pin',{
+      p_student_session:studentAccount.session_token,
+      p_new_pin:pin
+    });
+    if (!result?.success || !result.session_token) throw new Error(result?.message || 'Não foi possível trocar o PIN.');
+    studentAccount.session_token=result.session_token;
+    studentAccount.expires_at=result.expires_at;
+    studentAccount.must_change_pin=false;
+    localStorage.setItem(STUDENT_SESSION_KEY,JSON.stringify(studentAccount));
+    $('studentNewPin').value='';
+    $('studentConfirmPin').value='';
+    $('studentChangePinOverlay').hidden=true;
+    showStudentIdentity();
+    continueAfterStudentAccess();
+  } catch(error) {
+    $('studentChangePinMessage').textContent=error.message || 'Falha ao trocar o PIN.';
   } finally {button.disabled=false;}
 }
 async function logoutStudent() {
   const token = studentAccount?.session_token;
   studentAccount=null;
+  pendingStudentQuest=null;
   localStorage.removeItem(STUDENT_SESSION_KEY);
+  $('studentChangePinOverlay').hidden=true;
+  $('studentLoginOverlay').hidden=true;
   showStudentIdentity();
   closeQuestModal();
   closeRedQuestModal();
@@ -1716,22 +1814,21 @@ async function logoutStudent() {
 }
 async function teacherSetStudentPin() {
   const studentId=$('teacherPinStudent').value;
-  const pin=$('teacherStudentPin').value.trim();
-  if(!studentId || !/^[0-9]{6}$/.test(pin)) {
-    $('teacherPinStatus').textContent='Escolha um aluno e informe exatamente 6 números.';
+  if(!studentId) {
+    $('teacherPinStatus').textContent='Selecione um aluno para redefinir o PIN.';
     return;
   }
+  if(!confirm('Redefinir o PIN deste aluno para 000000? Ele será desconectado e precisará criar outro PIN ao entrar.'))return;
   const button=$('teacherSaveStudentPin');
   button.disabled=true;
-  $('teacherPinStatus').textContent='Salvando PIN com segurança...';
+  $('teacherPinStatus').textContent='Redefinindo PIN...';
   try {
     const result=await teacherQuestRpc('alienbot_teacher_set_student_pin',{
-      p_student_id:studentId,p_pin:pin
+      p_student_id:studentId,p_pin:'000000'
     });
-    $('teacherStudentPin').value='';
-    $('teacherPinStatus').textContent=`✅ ${result?.student_name || 'Aluno'}: PIN definido. Entregue o código somente ao aluno.`;
+    $('teacherPinStatus').textContent=`✅ PIN de ${result?.student_name || 'aluno'} redefinido para 000000. No próximo login, a troca será obrigatória.`;
   } catch(error) {
-    $('teacherPinStatus').textContent=error.message || 'Não foi possível definir o PIN.';
+    $('teacherPinStatus').textContent=error.message || 'Não foi possível redefinir o PIN.';
   } finally {button.disabled=false;}
 }
 // Chamada protegida: só com sessão de professor ativa.
@@ -2334,12 +2431,18 @@ $('toggleAdmin').addEventListener('click', () => {
   $('toggleAdmin').textContent = open ? 'Fechar painel' : 'Abrir painel';
 });
 
-$('studentLoginToggle').addEventListener('click', () => openStudentLogin());
+$('studentLoginToggle').addEventListener('click', () => {
+  if (studentAccount?.must_change_pin) openStudentChangePin();
+  else openStudentLogin();
+});
 $('studentLogoutButton').addEventListener('click', logoutStudent);
 $('studentLoginButton').addEventListener('click', loginStudent);
 $('studentLoginPin').addEventListener('keydown', e => {if(e.key==='Enter')loginStudent();});
 $('closeStudentLogin').addEventListener('click', closeStudentLogin);
 $('studentLoginOverlay').addEventListener('click', e => {if(e.target === $('studentLoginOverlay'))closeStudentLogin();});
+$('studentChangePinSubmit').addEventListener('click', studentChangePin);
+$('studentConfirmPin').addEventListener('keydown', e => {if(e.key==='Enter')studentChangePin();});
+$('studentChangePinLogout').addEventListener('click', logoutStudent);
 $('teacherSaveStudentPin').addEventListener('click', teacherSetStudentPin);
 $('loginButton').addEventListener('click', login);
 
