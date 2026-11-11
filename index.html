@@ -1012,6 +1012,20 @@ main > header {
 }
 @media(prefers-reduced-motion:reduce){.fire-highlight{animation:none!important}}
 
+
+/* QUEST DE FOGO PVP: apenas os novos controles. Não mexe na estrutura do ranking. */
+.manual-quest-button{border-color:#ffe3a0;background:radial-gradient(circle at 38% 26%,#ffb638,#eb4d17 52%,#821000);color:#fff}
+.manual-fire-admin{padding:15px 17px;margin-bottom:18px;border:1px solid #913b27;border-radius:14px;background:linear-gradient(120deg,#2c100b,#131010)}
+.manual-fire-admin strong{color:#ffb174;font-size:13px;letter-spacing:.04em}
+.manual-fire-admin .notice{margin-top:7px}
+.manual-fire-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-top:13px}
+.manual-fire-actions .field{width:190px;max-width:100%}
+.manual-fire-start{padding:12px 16px;border:1px solid #ff8544;background:linear-gradient(95deg,#ffad31,#f54f1b);color:#230600;font-weight:950}
+.manual-fire-start:disabled{opacity:.52;cursor:wait}
+.attack-card #redAttackTarget{border-color:#b54a2c;background:#140806;color:#fff}
+.attack-card .quest-description{margin-bottom:16px}
+#redAttackMessage{color:#ffb078}
+@media(max-width:520px){.manual-fire-actions .field{width:100%}.manual-fire-start{width:100%}}
 </style>
 </head>
 
@@ -1028,7 +1042,8 @@ main > header {
              alt="Símbolo original AlienBot">
         <span>ALIENBOT</span>
         <button id="questButton" class="quest-button" type="button" aria-label="Abrir Alien Quest" title="Alien Quest" hidden>?</button>
-        <button id="redQuestButton" class="red-quest-button" type="button" aria-label="Abrir QUEST de Fogo" title="QUEST de Fogo • +10 pontos" hidden>🔥</button>
+        <button id="redQuestButton" class="red-quest-button" type="button" aria-label="Abrir QUEST de Fogo automática" title="QUEST de Fogo automática • +10 pontos" hidden>🔥</button>
+        <button id="manualRedQuestButton" class="red-quest-button manual-quest-button" type="button" aria-label="Abrir QUEST de Fogo liberada pelo professor" title="QUEST de Fogo especial do professor" hidden>⚔</button>
       </div>
 
       <div class="tag">OBR · RESGATE/ARTÍSTICA</div>
@@ -1073,7 +1088,7 @@ main > header {
         <div class="red-quest-emblem" aria-hidden="true">🔥</div>
         <p class="quest-eyebrow">DESAFIO PVP • CONHECIMENTO</p>
         <h2 id="redQuestTitle">QUEST DE FOGO</h2>
-        <p class="quest-description">Acerte uma questão e conquiste <strong>+10 pontos</strong> e o título de fogo!</p>
+        <p class="quest-description" id="redQuestDescription">Acerte uma questão, ganhe <strong>+10 pontos</strong> e escolha um adversário para perder 10 pontos!</p>
         <p class="red-question" id="redQuestQuestion">Carregando pergunta...</p>
         <label class="quest-label" for="redQuestStudentName">Seu nome no ranking</label>
         <input id="redQuestStudentName" type="text" maxlength="80" autocomplete="off" placeholder="Nome igual ao do ranking">
@@ -1087,6 +1102,22 @@ main > header {
       </div>
     </div>
 
+
+    <!-- Ataque PvP APÓS a QUEST ser respondida; a janela da QUIZ fecha normalmente. -->
+    <div class="quest-overlay" id="redAttackOverlay" role="dialog" aria-modal="true" aria-labelledby="redAttackTitle" hidden>
+      <div class="quest-card red-quest-card attack-card">
+        <button class="quest-close" id="closeRedAttack" type="button" aria-label="Fechar ataque">×</button>
+        <div class="red-quest-emblem" aria-hidden="true">⚔️</div>
+        <p class="quest-eyebrow">ATAQUE PVP DESBLOQUEADO</p>
+        <h2 id="redAttackTitle">ESCOLHA SEU ALVO</h2>
+        <p class="quest-description">Você acertou e ganhou seus pontos! Agora pode retirar <strong>10 pontos</strong> de outro aluno. Só pode atacar uma vez.</p>
+        <label class="quest-label" for="redAttackTarget">Aluno adversário</label>
+        <select id="redAttackTarget" aria-label="Escolher adversário"></select>
+        <button id="confirmRedAttack" class="quest-claim red-claim" type="button">⚔️ ATACAR −10 PONTOS</button>
+        <button id="skipRedAttack" class="secondary-btn" type="button" style="width:100%;margin-top:8px">Pular ataque</button>
+        <p id="redAttackMessage" class="quest-message" role="status" aria-live="polite"></p>
+      </div>
+    </div>
 
     <!-- Mensagem rápida após o fechamento automático de qualquer QUEST -->
     <div id="questFeedbackToast" class="quest-feedback-toast" role="status" aria-live="polite" hidden></div>
@@ -1165,6 +1196,20 @@ main > header {
         </div>
 
         <div class="admin-tools" id="adminTools" hidden>
+          <div class="manual-fire-admin">
+            <div>
+              <strong>🔥 LIBERAR QUEST VERMELHA AGORA</strong>
+              <p class="notice">Essa QUEST especial vale os pontos que você definir. A automática continuará aparecendo de hora em hora.</p>
+            </div>
+            <div class="manual-fire-actions">
+              <div class="field">
+                <label for="manualRedPoints">PONTOS PELO ACERTO (1–100)</label>
+                <input id="manualRedPoints" type="number" min="1" max="100" step="1" value="10">
+              </div>
+              <button id="startManualRedQuest" class="manual-fire-start" type="button">🔥 LIBERAR QUEST</button>
+            </div>
+            <p id="manualRedStatus" class="notice" role="status" aria-live="polite"></p>
+          </div>
           <div class="form-grid">
             <div class="field wide">
               <label for="studentName">NOME DO ALUNO</label>
@@ -1508,6 +1553,10 @@ let questSubmitting = false;
 let redQuestStatus = null;
 let redQuestHighlightedIds = new Set();
 let redQuestSubmitting = false;
+let manualRedQuestStatus = null;
+let redQuestMode = 'auto';
+let pendingRedAttackToken = null;
+let redAttackSubmitting = false;
 
 try {
   session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
@@ -1682,6 +1731,11 @@ async function questRpc(functionName, payload = {}) {
   if (!response.ok) throw new Error(data?.message || data?.error || body || `Erro ${response.status}`);
   return data;
 }
+// Chamada protegida: só com sessão de professor ativa.
+async function teacherQuestRpc(functionName, payload = {}) {
+  if (!session?.access_token) throw new Error('Entre na conta do professor.');
+  return api(`rpc/${functionName}`, {method:'POST',body:JSON.stringify(payload)});
+}
 function questTimeLeft(ms) {
   const seconds = Math.max(0, Math.ceil(ms / 1000));
   return `${String(Math.floor(seconds / 60)).padStart(2,'0')}:${String(seconds % 60).padStart(2,'0')}`;
@@ -1748,49 +1802,139 @@ async function claimAlienQuest() {
   }
 }
 
-/* QUEST DE FOGO — A RESPOSTA É VALIDADA PELO SUPABASE */
+/* QUEST VERMELHA: automática de hora em hora + manual do professor. */
 function studentQuestClass(studentId) {
   const id = String(studentId);
   if (redQuestHighlightedIds.has(id)) return 'fire-highlight';
   if (questHighlightedIds.has(id)) return 'quest-highlight';
   return '';
 }
-
-function updateRedQuestCountdown() {
-  if ($('redQuestOverlay').hidden || !redQuestStatus) return;
-  $('redQuestCountdown').textContent = `Tempo restante: ${questTimeLeft(new Date(redQuestStatus.ends_at).getTime() - Date.now())}`;
+function activeRedQuest() {
+  return redQuestMode === 'manual' ? manualRedQuestStatus : redQuestStatus;
 }
-
+function isRedQuestActive(status) {
+  return Boolean(status?.active) && Date.now() < new Date(status.ends_at).getTime();
+}
+function updateRedQuestCountdown() {
+  if ($('redQuestOverlay').hidden) return;
+  const status = activeRedQuest();
+  if (!status) return;
+  $('redQuestCountdown').textContent = `Tempo restante: ${questTimeLeft(new Date(status.ends_at).getTime() - Date.now())}`;
+}
 async function refreshRedQuest() {
   try {
     redQuestStatus = await questRpc('alienbot_red_quest_status');
     redQuestHighlightedIds = new Set((redQuestStatus?.highlighted_student_ids || []).map(String));
-    const active = Boolean(redQuestStatus?.active) && Date.now() < new Date(redQuestStatus.ends_at).getTime();
+    const active = isRedQuestActive(redQuestStatus);
     $('redQuestButton').hidden = !active;
-    if (!active && !$('redQuestOverlay').hidden) closeRedQuestModal();
+    if (!active && redQuestMode === 'auto' && !$('redQuestOverlay').hidden) closeRedQuestModal();
     render();
     updateRedQuestCountdown();
   } catch (error) {
     $('redQuestButton').hidden = true;
-    console.warn('Quest de Fogo indisponível:', error.message);
+    console.warn('Quest de Fogo automática indisponível:', error.message);
   }
 }
-
-function openRedQuestModal() {
-  if (!redQuestStatus?.active || Date.now() >= new Date(redQuestStatus.ends_at).getTime()) return;
-  $('redQuestQuestion').textContent = redQuestStatus.question || 'Pergunta indisponível.';
+async function refreshManualRedQuest() {
+  try {
+    manualRedQuestStatus = await questRpc('alienbot_manual_red_quest_status');
+    const active = isRedQuestActive(manualRedQuestStatus);
+    $('manualRedQuestButton').hidden = !active;
+    if (!active && redQuestMode === 'manual' && !$('redQuestOverlay').hidden) closeRedQuestModal();
+    if (session?.access_token) {
+      $('manualRedStatus').textContent = active
+        ? `⚔️ QUEST especial ativa até ${new Date(manualRedQuestStatus.ends_at).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})} — recompensa: ${manualRedQuestStatus.points_reward} pontos.`
+        : 'Nenhuma QUEST manual ativa.';
+    }
+    updateRedQuestCountdown();
+  } catch (error) {
+    $('manualRedQuestButton').hidden = true;
+    console.warn('Quest manual indisponível:', error.message);
+  }
+}
+async function startManualRedQuest() {
+  const button = $('startManualRedQuest');
+  const points = Number($('manualRedPoints').value);
+  if (!Number.isInteger(points) || points < 1 || points > 100) {
+    $('manualRedStatus').textContent = 'Escolha entre 1 e 100 pontos.';
+    return;
+  }
+  if (!confirm(`Liberar agora uma QUEST DE FOGO de ${points} pontos por 5 minutos?`)) return;
+  button.disabled = true;
+  $('manualRedStatus').textContent = 'Liberando QUEST para todos os alunos...';
+  try {
+    const result = await teacherQuestRpc('alienbot_start_manual_red_quest', {p_points:points});
+    $('manualRedStatus').textContent = result?.message || 'QUEST especial liberada!';
+    await refreshManualRedQuest();
+  } catch (error) {
+    $('manualRedStatus').textContent = error.message || 'Falha ao liberar QUEST.';
+  } finally {
+    button.disabled = false;
+  }
+}
+function openRedQuestModal(mode = 'auto') {
+  redQuestMode = mode;
+  const status = activeRedQuest();
+  if (!isRedQuestActive(status)) return;
+  const reward = mode === 'manual' ? Number(status.points_reward) : 10;
+  $('redQuestQuestion').textContent = status.question || 'Pergunta indisponível.';
+  $('redQuestDescription').innerHTML = mode === 'manual'
+    ? `🔥 QUEST ESPECIAL DO PROFESSOR: acerte para ganhar <strong>+${reward} pontos</strong> e atacar um adversário!`
+    : 'Acerte uma questão para ganhar <strong>+10 pontos</strong> e atacar um adversário!';
   $('redQuestStudentName').value = '';
   $('redQuestStudentName').disabled = false;
   document.querySelectorAll('input[name="redQuestAnswer"]').forEach(input => {input.checked = false;input.disabled = false;});
   $('redQuestMessage').textContent = '';
   $('claimRedQuest').disabled = false;
-  $('claimRedQuest').textContent = 'ENVIAR RESPOSTA • +10 PONTOS';
+  $('claimRedQuest').textContent = `ENVIAR RESPOSTA • +${reward} PONTOS`;
   $('redQuestOverlay').hidden = false;
   updateRedQuestCountdown();
   $('redQuestStudentName').focus();
 }
 function closeRedQuestModal() { $('redQuestOverlay').hidden = true; }
 
+function closeRedAttackModal() {
+  $('redAttackOverlay').hidden = true;
+  pendingRedAttackToken = null;
+}
+function openRedAttackModal(token, studentName) {
+  if (!token) return;
+  pendingRedAttackToken = token;
+  $('redAttackMessage').textContent = '';
+  const available = sorted().filter(s =>
+    s.name.toLocaleLowerCase('pt-BR').trim() !== studentName.toLocaleLowerCase('pt-BR').trim()
+    && Number(s.points) >= 10
+  );
+  const target = $('redAttackTarget');
+  target.innerHTML = '<option value="">Escolha um adversário...</option>' +
+    available.map(s => `<option value="${escapeHTML(s.id)}">${escapeHTML(s.name)} — ${s.points} pontos</option>`).join('');
+  $('confirmRedAttack').disabled = !available.length;
+  if (!available.length) $('redAttackMessage').textContent = 'Nenhum adversário tem 10 pontos disponíveis para o ataque.';
+  $('redAttackOverlay').hidden = false;
+}
+async function confirmRedAttack() {
+  if (redAttackSubmitting || !pendingRedAttackToken) return;
+  const targetId = $('redAttackTarget').value;
+  if (!targetId) { $('redAttackMessage').textContent = 'Selecione um adversário.'; return; }
+  const button = $('confirmRedAttack');
+  button.disabled = true;
+  redAttackSubmitting = true;
+  $('redAttackMessage').textContent = 'Registrando ataque no ranking...';
+  try {
+    const result = await questRpc('alienbot_red_attack', {
+      p_attack_token:pendingRedAttackToken,
+      p_target_student_id:targetId
+    });
+    closeRedAttackModal();
+    showQuestFeedback(result?.message || '⚔️ Ataque concluído!', 'fire');
+    await loadStudents();
+  } catch (error) {
+    $('redAttackMessage').textContent = error.message || 'Não foi possível atacar.';
+  } finally {
+    redAttackSubmitting = false;
+    button.disabled = false;
+  }
+}
 async function claimRedQuest() {
   if (redQuestSubmitting) return;
   const name = $('redQuestStudentName').value.trim();
@@ -1802,30 +1946,34 @@ async function claimRedQuest() {
   $('claimRedQuest').textContent = 'VERIFICANDO RESPOSTA...';
   $('redQuestMessage').textContent = 'Conferindo sua resposta...';
   try {
-    const result = await questRpc('alienbot_claim_red_quest', {
-      p_student_name: name,
-      p_answer: checked.value === 'true'
+    const isManual = redQuestMode === 'manual';
+    const result = await questRpc(isManual ? 'alienbot_claim_manual_red_quest' : 'alienbot_claim_red_quest', {
+      p_student_name:name,
+      p_answer:checked.value === 'true',
+      ...(isManual ? {p_manual_quest_id: manualRedQuestStatus.quest_id} : {})
     });
     if (result?.success === false) throw new Error(result?.message || 'Resposta não registrada.');
 
-    // Acerto OU erro confirmado: a tentativa foi registrada e a janela fecha.
+    // A janela da QUEST fecha após o envio confirmado, como você pediu.
     closeRedQuestModal();
-    const message = result?.message || (result?.correct ? '🔥 ACERTOU! +10 pontos!' : 'Resposta incorreta. Tente na próxima QUEST!');
-    showQuestFeedback(message, result?.correct ? 'fire' : 'miss');
-
+    showQuestFeedback(result?.message || 'Resposta registrada!', result?.correct ? 'fire' : 'miss');
     try {
       await loadStudents();
-      await refreshRedQuest();
+      await Promise.all([refreshRedQuest(),refreshManualRedQuest()]);
     } catch (updateError) {
       console.warn('Resposta registrada, mas não foi possível atualizar o ranking:', updateError);
     }
+    // O ataque é um diálogo separado do QUIZ, só aparece quando acertou.
+    if (result?.correct && result?.attack_token) {
+      openRedAttackModal(result.attack_token, result.student_name || name);
+    }
   } catch (error) {
-    // Erro de comunicação/validação: não fechar, pois o resgate não foi confirmado.
     $('redQuestMessage').textContent = error.message || 'Não foi possível registrar sua participação.';
   } finally {
     redQuestSubmitting = false;
     $('claimRedQuest').disabled = false;
-    $('claimRedQuest').textContent = 'ENVIAR RESPOSTA • +10 PONTOS';
+    const status = activeRedQuest();
+    $('claimRedQuest').textContent = `ENVIAR RESPOSTA • +${redQuestMode === 'manual' ? (status?.points_reward || 10) : 10} PONTOS`;
   }
 }
 
@@ -2092,12 +2240,18 @@ $('questStudentName').addEventListener('keydown', event => {
 });
 
 /* EVENTOS DA QUEST DE FOGO */
-$('redQuestButton').addEventListener('click', openRedQuestModal);
+$('redQuestButton').addEventListener('click', () => openRedQuestModal('auto'));
+$('manualRedQuestButton').addEventListener('click', () => openRedQuestModal('manual'));
 $('closeRedQuest').addEventListener('click', closeRedQuestModal);
 $('redQuestOverlay').addEventListener('click', event => {
   if (event.target === $('redQuestOverlay')) closeRedQuestModal();
 });
 $('claimRedQuest').addEventListener('click', claimRedQuest);
+$('startManualRedQuest').addEventListener('click', startManualRedQuest);
+$('closeRedAttack').addEventListener('click', closeRedAttackModal);
+$('skipRedAttack').addEventListener('click', closeRedAttackModal);
+$('confirmRedAttack').addEventListener('click', confirmRedAttack);
+$('redAttackOverlay').addEventListener('click', event => { if (event.target === $('redAttackOverlay')) closeRedAttackModal(); });
 $('redQuestStudentName').addEventListener('keydown', event => {
   if (event.key === 'Enter') claimRedQuest();
 });
@@ -2306,9 +2460,10 @@ async function start() {
     });
   }, 10000);
 
-  await Promise.all([refreshQuest(), refreshRedQuest()]);
+  await Promise.all([refreshQuest(), refreshRedQuest(),refreshManualRedQuest()]);
   setInterval(refreshQuest, 5000);
   setInterval(refreshRedQuest, 5000);
+  setInterval(refreshManualRedQuest, 5000);
   setInterval(updateQuestCountdown, 1000);
   setInterval(updateRedQuestCountdown, 1000);
 }
