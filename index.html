@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -268,6 +267,66 @@ h1 {
 .quest-highlight{color:#39ff75!important;text-shadow:0 0 7px #39ff75aa,0 0 15px #39ff7566;animation:questNameGlow 1.8s ease-in-out infinite alternate}
 @keyframes questNameGlow{from{text-shadow:0 0 5px #39ff7577}to{text-shadow:0 0 9px #39ff75,0 0 19px #39ff7588}}
 @media(max-width:520px){.brand{gap:8px;letter-spacing:.10em}.alien{width:48px;height:48px}.quest-button{width:31px;height:31px;flex-basis:31px}}
+
+
+/* QUEST VERMELHA — PVP DE CONHECIMENTO */
+.red-quest-button{
+  width:35px;height:35px;flex:0 0 35px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:50%;border:1px solid #ff8057;color:#fff5c5;
+  background:radial-gradient(circle at 35% 30%,#ff8b49,#e5230b 55%,#580a05);
+  box-shadow:0 0 9px #ff3400bb,0 0 25px #e8210077;
+  font-size:21px;cursor:pointer;animation:redQuestPulse 1s ease-in-out infinite
+}
+.red-quest-button[hidden]{display:none!important}
+@keyframes redQuestPulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 8px #ff340099,0 0 18px #ff340055}
+  50%{transform:scale(1.09);box-shadow:0 0 16px #ff9b27,0 0 36px #ff3900aa}
+}
+.red-quest-card{
+  border:1px solid #ff6336;
+  background:radial-gradient(ellipse at 50% 0%,#5b140a 0%,#210b0a 48%,#090909 100%);
+  box-shadow:0 0 35px #ff3b003d,0 25px 80px #000;
+}
+.red-quest-emblem{
+  width:63px;height:63px;margin:0 auto 10px;display:grid;place-items:center;
+  border:2px solid #ffb15e;border-radius:50%;font-size:34px;
+  background:radial-gradient(circle at 30% 20%,#ffb449,#d62a11 70%);
+  box-shadow:0 0 22px #ff3c00bb;animation:redQuestPulse 1.3s ease-in-out infinite;
+}
+.red-quest-card h2{color:#ff8442}
+.red-quest-card .quest-eyebrow{color:#ffae74}
+.red-question{font-size:16px;line-height:1.5;font-weight:800;color:#fff0db;margin:10px 0 17px}
+#redQuestStudentName{border:1px solid #b54a2c;background:#140806}
+.red-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.red-choice{
+  display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;
+  border:1px solid #9e3b26;border-radius:12px;padding:12px 9px;
+  background:#2d100c;color:#ffe0ce;font-size:14px;font-weight:900;
+}
+.red-choice:has(input:checked){border-color:#ffbc70;background:#78200f;box-shadow:0 0 12px #ff580055}
+.red-choice input{accent-color:#ff6a30}
+.red-claim{background:linear-gradient(90deg,#ffb63d,#ff5429,#c8230a);color:#240900}
+#redQuestMessage{color:#ffb078}
+.fire-highlight{
+  display:inline-block!important;
+  color:#ffb332!important;
+  background:linear-gradient(180deg,#fff6af 3%,#ffcc38 20%,#ff611b 48%,#ec1b05 69%,#ffbd3d 91%);
+  background-size:100% 230%;background-clip:text;-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 4px #ff3f00cc) drop-shadow(0 0 9px #ff680088);
+  animation:alienFireFlicker .75s ease-in-out infinite alternate;
+  font-weight:1000;vertical-align:middle;
+}
+.fire-highlight::before{content:'🔥';-webkit-text-fill-color:initial;display:inline-block;margin-right:5px;
+  font-size:.85em;animation:alienFireDance .55s ease-in-out infinite alternate}
+@keyframes alienFireFlicker{
+  0%{background-position:50% 0%;filter:drop-shadow(0 0 3px #ff6800aa) drop-shadow(0 0 6px #e7220077)}
+  50%{background-position:50% 55%}
+  100%{background-position:50% 100%;filter:drop-shadow(0 0 7px #ff3200dd) drop-shadow(0 0 14px #ff8a0077)}
+}
+@keyframes alienFireDance{from{transform:translateY(1px) rotate(-8deg) scale(.96)}to{transform:translateY(-3px) rotate(7deg) scale(1.1)}}
+@media(max-width:520px){.red-quest-button{width:31px;height:31px;flex-basis:31px}.quest-card{padding:23px 18px 18px}}
+@media(prefers-reduced-motion:reduce){.fire-highlight,.fire-highlight::before,.red-quest-button,.red-quest-emblem{animation:none}}
 
 /* PERFIL DO ALUNO */
 
@@ -851,6 +910,7 @@ main > header {
              alt="Símbolo original AlienBot">
         <span>ALIENBOT</span>
         <button id="questButton" class="quest-button" type="button" aria-label="Abrir Alien Quest" title="Alien Quest" hidden>?</button>
+        <button id="redQuestButton" class="red-quest-button" type="button" aria-label="Abrir QUEST de Fogo" title="QUEST de Fogo • +10 pontos" hidden>🔥</button>
       </div>
 
       <div class="tag">OBR · RESGATE/ARTÍSTICA</div>
@@ -884,6 +944,28 @@ main > header {
         <button id="claimQuest" class="quest-claim" type="button">RESGATAR +3 PONTOS</button>
         <p id="questMessage" class="quest-message" role="status" aria-live="polite"></p>
         <p id="questCountdown" class="quest-countdown"></p>
+      </div>
+    </div>
+
+
+    <!-- SEGUNDA QUEST: UM QUIZ V/F COM EFEITO DE FOGO NO RANKING -->
+    <div class="quest-overlay" id="redQuestOverlay" role="dialog" aria-modal="true" aria-labelledby="redQuestTitle" hidden>
+      <div class="quest-card red-quest-card">
+        <button class="quest-close" id="closeRedQuest" type="button" aria-label="Fechar">×</button>
+        <div class="red-quest-emblem" aria-hidden="true">🔥</div>
+        <p class="quest-eyebrow">DESAFIO PVP • CONHECIMENTO</p>
+        <h2 id="redQuestTitle">QUEST DE FOGO</h2>
+        <p class="quest-description">Acerte uma questão e conquiste <strong>+10 pontos</strong> e o título de fogo!</p>
+        <p class="red-question" id="redQuestQuestion">Carregando pergunta...</p>
+        <label class="quest-label" for="redQuestStudentName">Seu nome no ranking</label>
+        <input id="redQuestStudentName" type="text" maxlength="80" autocomplete="off" placeholder="Nome igual ao do ranking">
+        <div class="red-choices" role="radiogroup" aria-label="Sua resposta">
+          <label class="red-choice"><input type="radio" name="redQuestAnswer" value="true"> VERDADEIRO</label>
+          <label class="red-choice"><input type="radio" name="redQuestAnswer" value="false"> FALSO</label>
+        </div>
+        <button id="claimRedQuest" class="quest-claim red-claim" type="button">ENVIAR RESPOSTA • +10 PONTOS</button>
+        <p id="redQuestMessage" class="quest-message" role="status" aria-live="polite"></p>
+        <p id="redQuestCountdown" class="quest-countdown"></p>
       </div>
     </div>
 
@@ -1301,6 +1383,9 @@ let refreshPromise = null;
 let questStatus = null;
 let questHighlightedIds = new Set();
 let questSubmitting = false;
+let redQuestStatus = null;
+let redQuestHighlightedIds = new Set();
+let redQuestSubmitting = false;
 
 try {
   session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
@@ -1486,7 +1571,7 @@ function openQuestModal() {
   $('questMessage').textContent = '';
   $('questStudentName').value = '';
   $('questStudentName').disabled = false;
-  $('claimQuest').textContent = 'RESGATAR +5 PONTOS';
+  $('claimQuest').textContent = 'RESGATAR +3 PONTOS';
   $('questOverlay').hidden = false;
   updateQuestCountdown();
   $('questStudentName').focus();
@@ -1502,7 +1587,7 @@ async function claimAlienQuest() {
   $('questMessage').textContent = 'Conferindo sua participação...';
   try {
     const result = await questRpc('alienbot_claim_quest', {p_student_name:name});
-    $('questMessage').textContent = result?.message || 'Missão concluída! Você recebeu 5 pontos.';
+    $('questMessage').textContent = result?.message || 'Missão concluída! Você recebeu 3 pontos.';
     $('questStudentName').disabled = true;
     $('claimQuest').textContent = 'RECOMPENSA RESGATADA';
     await loadStudents();
@@ -1512,7 +1597,80 @@ async function claimAlienQuest() {
   } finally {
     questSubmitting = false;
     $('claimQuest').disabled = false;
-    if (!$('questStudentName').disabled) $('claimQuest').textContent = 'RESGATAR +5 PONTOS';
+    if (!$('questStudentName').disabled) $('claimQuest').textContent = 'RESGATAR +3 PONTOS';
+  }
+}
+
+/* QUEST DE FOGO — A RESPOSTA É VALIDADA PELO SUPABASE */
+function studentQuestClass(studentId) {
+  const id = String(studentId);
+  if (redQuestHighlightedIds.has(id)) return 'fire-highlight';
+  if (questHighlightedIds.has(id)) return 'quest-highlight';
+  return '';
+}
+
+function updateRedQuestCountdown() {
+  if ($('redQuestOverlay').hidden || !redQuestStatus) return;
+  $('redQuestCountdown').textContent = `Tempo restante: ${questTimeLeft(new Date(redQuestStatus.ends_at).getTime() - Date.now())}`;
+}
+
+async function refreshRedQuest() {
+  try {
+    redQuestStatus = await questRpc('alienbot_red_quest_status');
+    redQuestHighlightedIds = new Set((redQuestStatus?.highlighted_student_ids || []).map(String));
+    const active = Boolean(redQuestStatus?.active) && Date.now() < new Date(redQuestStatus.ends_at).getTime();
+    $('redQuestButton').hidden = !active;
+    if (!active && !$('redQuestOverlay').hidden) closeRedQuestModal();
+    render();
+    updateRedQuestCountdown();
+  } catch (error) {
+    $('redQuestButton').hidden = true;
+    console.warn('Quest de Fogo indisponível:', error.message);
+  }
+}
+
+function openRedQuestModal() {
+  if (!redQuestStatus?.active || Date.now() >= new Date(redQuestStatus.ends_at).getTime()) return;
+  $('redQuestQuestion').textContent = redQuestStatus.question || 'Pergunta indisponível.';
+  $('redQuestStudentName').value = '';
+  $('redQuestStudentName').disabled = false;
+  document.querySelectorAll('input[name="redQuestAnswer"]').forEach(input => {input.checked = false;input.disabled = false;});
+  $('redQuestMessage').textContent = '';
+  $('claimRedQuest').disabled = false;
+  $('claimRedQuest').textContent = 'ENVIAR RESPOSTA • +10 PONTOS';
+  $('redQuestOverlay').hidden = false;
+  updateRedQuestCountdown();
+  $('redQuestStudentName').focus();
+}
+function closeRedQuestModal() { $('redQuestOverlay').hidden = true; }
+
+async function claimRedQuest() {
+  if (redQuestSubmitting) return;
+  const name = $('redQuestStudentName').value.trim();
+  const checked = document.querySelector('input[name="redQuestAnswer"]:checked');
+  if (!name) { $('redQuestMessage').textContent = 'Digite seu nome para participar.'; return; }
+  if (!checked) { $('redQuestMessage').textContent = 'Selecione VERDADEIRO ou FALSO.'; return; }
+  redQuestSubmitting = true;
+  $('claimRedQuest').disabled = true;
+  $('claimRedQuest').textContent = 'VERIFICANDO RESPOSTA...';
+  $('redQuestMessage').textContent = 'Conferindo sua resposta...';
+  try {
+    const result = await questRpc('alienbot_claim_red_quest', {
+      p_student_name: name,
+      p_answer: checked.value === 'true'
+    });
+    $('redQuestMessage').textContent = result?.message || (result?.correct ? 'Acertou!' : 'Resposta incorreta.');
+    $('redQuestStudentName').disabled = true;
+    document.querySelectorAll('input[name="redQuestAnswer"]').forEach(input => input.disabled = true);
+    $('claimRedQuest').textContent = result?.correct ? '🔥 10 PONTOS CONQUISTADOS!' : 'PARTICIPAÇÃO ENCERRADA';
+    await loadStudents();
+    await refreshRedQuest();
+  } catch (error) {
+    $('redQuestMessage').textContent = error.message || 'Não foi possível registrar sua participação.';
+    $('claimRedQuest').disabled = false;
+    $('claimRedQuest').textContent = 'ENVIAR RESPOSTA • +10 PONTOS';
+  } finally {
+    redQuestSubmitting = false;
   }
 }
 
@@ -1696,7 +1854,7 @@ function render() {
         <div class="place-label">${labels[i]}</div>
         ${
           s
-            ? `<div class="student-name ${questHighlightedIds.has(String(s.id)) ? 'quest-highlight' : ''}">${escapeHTML(s.name)}</div>
+            ? `<div class="student-name ${studentQuestClass(s.id)}">${escapeHTML(s.name)}</div>
                <div class="points">${s.points} ${s.points === 1 ? 'ponto' : 'pontos'}</div>`
             : '<div class="empty">Aguardando aluno</div>'
         }
@@ -1716,8 +1874,8 @@ function render() {
         return `
           <tr class="${danger ? 'danger-zone' : ''}">
             <td class="rank-num">${i + 1}º</td>
-            <td class="student-cell ${questHighlightedIds.has(String(s.id)) ? 'quest-highlight' : ''}">
-              ${escapeHTML(s.name)}
+            <td class="student-cell"><span class="${studentQuestClass(s.id)}">
+              ${escapeHTML(s.name)}</span>
               ${
                 danger
                   ? '<span class="danger-label">⚠ ZONA DE PERIGO</span>'
@@ -1776,6 +1934,17 @@ $('questOverlay').addEventListener('click', event => {
 $('claimQuest').addEventListener('click', claimAlienQuest);
 $('questStudentName').addEventListener('keydown', event => {
   if (event.key === 'Enter') claimAlienQuest();
+});
+
+/* EVENTOS DA QUEST DE FOGO */
+$('redQuestButton').addEventListener('click', openRedQuestModal);
+$('closeRedQuest').addEventListener('click', closeRedQuestModal);
+$('redQuestOverlay').addEventListener('click', event => {
+  if (event.target === $('redQuestOverlay')) closeRedQuestModal();
+});
+$('claimRedQuest').addEventListener('click', claimRedQuest);
+$('redQuestStudentName').addEventListener('keydown', event => {
+  if (event.key === 'Enter') claimRedQuest();
 });
 
 /* EVENTOS */
@@ -1982,9 +2151,11 @@ async function start() {
     });
   }, 10000);
 
-  await refreshQuest();
+  await Promise.all([refreshQuest(), refreshRedQuest()]);
   setInterval(refreshQuest, 5000);
+  setInterval(refreshRedQuest, 5000);
   setInterval(updateQuestCountdown, 1000);
+  setInterval(updateRedQuestCountdown, 1000);
 }
 
 start();
