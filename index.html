@@ -1022,6 +1022,26 @@ main > header {
 .manual-fire-actions .field{width:190px;max-width:100%}
 .manual-fire-start{padding:12px 16px;border:1px solid #ff8544;background:linear-gradient(95deg,#ffad31,#f54f1b);color:#230600;font-weight:950}
 .manual-fire-start:disabled{opacity:.52;cursor:wait}
+.manual-quest-button{border-color:#9fdcff;background:radial-gradient(circle at 38% 26%,#8ef5ff,#2f7cff 55%,#081f66);box-shadow:0 0 12px #39c7ff99,0 0 30px #2468ff66;color:#fff}
+.manual-fire-admin{border:1px solid #2e6ea6;background:linear-gradient(120deg,#08192c,#101318)}
+.manual-fire-admin strong{color:#8edcff}
+.manual-fire-start{border:1px solid #64d4ff;background:linear-gradient(95deg,#8ef5ff,#3a86ff);color:#041327;box-shadow:0 0 18px #2aa4ff33}
+.red-quest-card.manual-blue-mode{border:1px solid #5fd0ff;background:radial-gradient(ellipse at 50% 0%,#0a315d 0%,#091424 48%,#090909 100%);box-shadow:0 0 35px #1b8dff3d,0 25px 80px #000}
+.red-quest-card.manual-blue-mode h2{color:#8fdcff}
+.red-quest-card.manual-blue-mode .quest-eyebrow{color:#a2e9ff}
+.red-quest-card.manual-blue-mode .red-question{color:#dff7ff}
+.red-quest-card.manual-blue-mode #redQuestStudentName{border-color:#2c76b5;background:#06131d}
+.red-quest-card.manual-blue-mode .red-choice{border-color:#2c5c9e;background:#0b1930;color:#d8eeff}
+.red-quest-card.manual-blue-mode .red-choice:has(input:checked){border-color:#9edfff;background:#12396b;box-shadow:0 0 14px #34bfff55}
+.red-quest-card.manual-blue-mode .red-choice input{accent-color:#54cbff}
+.red-quest-card.manual-blue-mode .red-claim{background:linear-gradient(90deg,#9af3ff,#49a6ff,#165cff);color:#041327}
+.red-quest-card.manual-blue-mode #redQuestMessage{color:#a9ebff}
+.red-quest-card.manual-blue-mode .red-quest-emblem{border-color:#b8efff;background:radial-gradient(circle at 30% 20%,#a7f7ff,#2978ff 70%);box-shadow:0 0 22px #25bfffbb;animation:manualBluePulse 1.3s ease-in-out infinite}
+@keyframes manualBluePulse{0%,100%{transform:scale(1);box-shadow:0 0 10px #1bc7ff99,0 0 20px #2f68ff55}50%{transform:scale(1.08);box-shadow:0 0 18px #8ff0ff,0 0 35px #1b7fffaa}}
+.blue-fire-highlight{position:relative;display:inline-block!important;isolation:isolate;overflow:visible;padding:.10em .15em .14em .18em;z-index:0;font-weight:950!important;color:#8fe9ff!important;-webkit-text-fill-color:#8fe9ff!important;-webkit-text-stroke:.55px #073552;background:none!important;text-shadow:0 1px 1px #01111b,0 0 5px #2fd9ff,0 0 11px #1b74ffb3;filter:none!important;animation:alienbotBlueFlameLetters .8s ease-in-out infinite alternate;vertical-align:middle;line-height:1.35}
+.blue-fire-highlight::before{content:'💎';display:inline-block;margin-right:.28em;font-size:.9em;transform:translateY(-.02em);text-shadow:0 0 8px #7ce6ff,0 0 14px #2b79ff;position:relative;z-index:2}
+.blue-fire-highlight > .alienbot-fire-canvas{position:absolute;left:-.10em;bottom:-.22em;width:calc(100% + .18em);height:2.10em;z-index:-1;opacity:.94;pointer-events:none;display:block;mix-blend-mode:screen;filter:blur(.7px) saturate(1.23);-webkit-mask-image:linear-gradient(to top, transparent 0%, #000 18%, #000 82%, transparent 100%);mask-image:linear-gradient(to top, transparent 0%, #000 18%, #000 82%, transparent 100%)}
+@keyframes alienbotBlueFlameLetters{from{text-shadow:0 1px 1px #01111b,0 0 5px #2fd9ff,0 0 11px #1b74ff99}to{text-shadow:0 1px 1px #01111b,0 0 8px #89f0ff,0 0 16px #286fffcc}}
 .attack-card #redAttackTarget{border-color:#b54a2c;background:#140806;color:#fff}
 .attack-card .quest-description{margin-bottom:16px}
 #redAttackMessage{color:#ffb078}
@@ -1198,7 +1218,7 @@ main > header {
         <!-- QUEST manual: visível no painel, mas somente o professor autenticado pode liberar -->
           <div class="manual-fire-admin">
             <div>
-              <strong>🔥 LIBERAR QUEST VERMELHA AGORA</strong>
+              <strong>🔥 LIBERAR QUEST AZUL AGORA</strong>
               <p class="notice">Essa QUEST especial vale os pontos que você definir. A automática continuará aparecendo de hora em hora.</p>
             </div>
             <div class="manual-fire-actions">
@@ -1206,7 +1226,7 @@ main > header {
                 <label for="manualRedPoints">PONTOS PELO ACERTO (1–100)</label>
                 <input id="manualRedPoints" type="number" min="1" max="100" step="1" value="10">
               </div>
-              <button id="startManualRedQuest" class="manual-fire-start" type="button">🔥 LIBERAR QUEST</button>
+              <button id="startManualRedQuest" class="manual-fire-start" type="button">💎 LIBERAR QUEST AZUL</button>
             </div>
             <p id="manualRedStatus" class="notice" role="status" aria-live="polite">Entre com sua conta de professor para habilitar este botão.</p>
           </div>
@@ -1555,6 +1575,7 @@ let redQuestStatus = null;
 let redQuestHighlightedIds = new Set();
 let redQuestSubmitting = false;
 let manualRedQuestStatus = null;
+let manualBlueHighlightedIds = new Set();
 let redQuestMode = 'auto';
 let pendingRedAttackToken = null;
 let redAttackSubmitting = false;
@@ -1847,6 +1868,7 @@ async function refreshRedQuest() {
 async function refreshManualRedQuest() {
   try {
     manualRedQuestStatus = await questRpc('alienbot_manual_red_quest_status');
+    manualBlueHighlightedIds = new Set((manualRedQuestStatus?.highlighted_student_ids || []).map(String));
     const active = isRedQuestActive(manualRedQuestStatus);
     $('manualRedQuestButton').hidden = !active;
     if (!active && redQuestMode === 'manual' && !$('redQuestOverlay').hidden) closeRedQuestModal();
@@ -1858,6 +1880,7 @@ async function refreshManualRedQuest() {
     updateRedQuestCountdown();
   } catch (error) {
     $('manualRedQuestButton').hidden = true;
+    manualBlueHighlightedIds = new Set();
     console.warn('Quest manual indisponível:', error.message);
   }
 }
@@ -1886,9 +1909,17 @@ function openRedQuestModal(mode = 'auto') {
   const status = activeRedQuest();
   if (!isRedQuestActive(status)) return;
   const reward = mode === 'manual' ? Number(status.points_reward) : 10;
+  const overlay = $('redQuestOverlay');
+  const card = overlay.querySelector('.red-quest-card');
+  const eyebrow = overlay.querySelector('.quest-eyebrow');
+  const emblem = overlay.querySelector('.red-quest-emblem');
+  card.classList.toggle('manual-blue-mode', mode === 'manual');
+  $('redQuestTitle').textContent = mode === 'manual' ? 'QUEST AZUL' : 'QUEST DE FOGO';
+  eyebrow.textContent = mode === 'manual' ? 'MISSÃO DO PROFESSOR • DIAMANTE' : 'DESAFIO PVP • CONHECIMENTO';
+  emblem.textContent = mode === 'manual' ? '👽' : '🔥';
   $('redQuestQuestion').textContent = status.question || 'Pergunta indisponível.';
   $('redQuestDescription').innerHTML = mode === 'manual'
-    ? `🔥 QUEST ESPECIAL DO PROFESSOR: acerte para ganhar <strong>+${reward} pontos</strong> e atacar um adversário!`
+    ? `💎 QUEST AZUL DO PROFESSOR: acerte para ganhar <strong>+${reward} pontos</strong>, receber fogo azul com diamante no nome e atacar um adversário!`
     : 'Acerte uma questão para ganhar <strong>+10 pontos</strong> e atacar um adversário!';
   $('redQuestStudentName').value = '';
   $('redQuestStudentName').disabled = false;
@@ -1896,11 +1927,15 @@ function openRedQuestModal(mode = 'auto') {
   $('redQuestMessage').textContent = '';
   $('claimRedQuest').disabled = false;
   $('claimRedQuest').textContent = `ENVIAR RESPOSTA • +${reward} PONTOS`;
-  $('redQuestOverlay').hidden = false;
+  overlay.hidden = false;
   updateRedQuestCountdown();
   $('redQuestStudentName').focus();
 }
-function closeRedQuestModal() { $('redQuestOverlay').hidden = true; }
+function closeRedQuestModal() {
+  const overlay = $('redQuestOverlay');
+  overlay.hidden = true;
+  overlay.querySelector('.red-quest-card').classList.remove('manual-blue-mode');
+}
 
 function closeRedAttackModal() {
   $('redAttackOverlay').hidden = true;
@@ -2521,12 +2556,13 @@ start();
     if (!ctx) return;
     const t = ms * .001;
     const {w,h} = flame;
+    const isBlue = flame.canvas.parentElement?.classList.contains('blue-fire-highlight');
     ctx.clearRect(0, 0, w, h);
     const bottom = h - 5;
     const floorGlow = ctx.createRadialGradient(w/2,bottom-4,0,w/2,bottom-4,w*.53);
-    floorGlow.addColorStop(0,'rgba(255,135,9,.41)');
-    floorGlow.addColorStop(.43,'rgba(255,54,0,.21)');
-    floorGlow.addColorStop(1,'rgba(255,40,0,0)');
+    floorGlow.addColorStop(0,isBlue ? 'rgba(102,225,255,.40)' : 'rgba(255,135,9,.41)');
+    floorGlow.addColorStop(.43,isBlue ? 'rgba(55,124,255,.20)' : 'rgba(255,54,0,.21)');
+    floorGlow.addColorStop(1,isBlue ? 'rgba(39,93,255,0)' : 'rgba(255,40,0,0)');
     ctx.fillStyle=floorGlow;
     ctx.fillRect(0,h*.48,w,h*.52);
 
@@ -2542,18 +2578,31 @@ start();
         const sway=Math.sin(t*2.3+i*1.4+layer)*w/amount*.47;
         const width=w/amount*(layer===0?.70:.43);
         const grad=ctx.createLinearGradient(0,bottom-height,0,bottom);
-        grad.addColorStop(0,'rgba(246,31,0,.03)');
-        grad.addColorStop(.24,layer===0?'rgba(250,60,0,.74)':'rgba(255,95,4,.66)');
-        grad.addColorStop(.64,layer===0?'rgba(255,138,0,.91)':'rgba(255,177,15,.88)');
-        grad.addColorStop(1,layer===0?'rgba(255,207,39,.88)':'rgba(255,248,163,.86)');
+        if (isBlue) {
+          grad.addColorStop(0,'rgba(19,64,255,.03)');
+          grad.addColorStop(.24,layer===0?'rgba(27,127,255,.72)':'rgba(34,176,255,.66)');
+          grad.addColorStop(.64,layer===0?'rgba(79,221,255,.90)':'rgba(111,241,255,.86)');
+          grad.addColorStop(1,layer===0?'rgba(211,248,255,.86)':'rgba(236,255,255,.92)');
+        } else {
+          grad.addColorStop(0,'rgba(246,31,0,.03)');
+          grad.addColorStop(.24,layer===0?'rgba(250,60,0,.74)':'rgba(255,95,4,.66)');
+          grad.addColorStop(.64,layer===0?'rgba(255,138,0,.91)':'rgba(255,177,15,.88)');
+          grad.addColorStop(1,layer===0?'rgba(255,207,39,.88)':'rgba(255,248,163,.86)');
+        }
         tongue(ctx,x,bottom,height,width,sway,grad,layer===0?9:4);
 
         if(layer===1){
           const innerHeight=height*.59;
           const glow=ctx.createLinearGradient(0,bottom-innerHeight,0,bottom);
-          glow.addColorStop(0,'rgba(255,189,34,0)');
-          glow.addColorStop(.45,'rgba(255,229,98,.63)');
-          glow.addColorStop(1,'rgba(255,252,204,.85)');
+          if (isBlue) {
+            glow.addColorStop(0,'rgba(124,229,255,0)');
+            glow.addColorStop(.45,'rgba(145,238,255,.60)');
+            glow.addColorStop(1,'rgba(240,255,255,.88)');
+          } else {
+            glow.addColorStop(0,'rgba(255,189,34,0)');
+            glow.addColorStop(.45,'rgba(255,229,98,.63)');
+            glow.addColorStop(1,'rgba(255,252,204,.85)');
+          }
           tongue(ctx,x,bottom,innerHeight,width*.52,sway*.33,glow,2);
         }
       }
@@ -2566,7 +2615,7 @@ start();
       const sx=(i*.241+.3+.06*Math.sin(t*1.2+i*4))*w%w;
       const sy=bottom-phase*h*.78;
       const size=phase>.7? .65:1.2;
-      ctx.fillStyle=`rgba(255,${130+i*19},36,${(.7*(1-phase)).toFixed(2)})`;
+      ctx.fillStyle = isBlue ? `rgba(${120+i*10}, ${225+i*4}, 255, ${(.7*(1-phase)).toFixed(2)})` : `rgba(255,${130+i*19},36,${(.7*(1-phase)).toFixed(2)})`;
       ctx.beginPath();ctx.arc(sx,sy,size,0,Math.PI*2);ctx.fill();
     }
   }
@@ -2584,7 +2633,7 @@ start();
   }
 
   function attachFlames(){
-    document.querySelectorAll('.fire-highlight').forEach(el=>{
+    document.querySelectorAll('.fire-highlight, .blue-fire-highlight').forEach(el=>{
       if(el.querySelector(':scope > .alienbot-fire-canvas'))return;
       const canvas=document.createElement('canvas');
       canvas.className='alienbot-fire-canvas';
