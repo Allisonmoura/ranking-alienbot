@@ -1201,9 +1201,9 @@ main > header {
       <div class="quest-card red-quest-card">
         <button class="quest-close" id="closeRedQuest" type="button" aria-label="Fechar">×</button>
         <div class="red-quest-emblem" aria-hidden="true">🔥</div>
-        <p class="quest-eyebrow">DESAFIO PVP • CONHECIMENTO</p>
+        <p class="quest-eyebrow">DESAFIO DE CONHECIMENTO • SEQUÊNCIA</p>
         <h2 id="redQuestTitle">QUEST DE FOGO</h2>
-        <p class="quest-description" id="redQuestDescription">Acerte uma questão, ganhe <strong>+10 pontos</strong> e escolha um adversário para perder 10 pontos!</p>
+        <p class="quest-description" id="redQuestDescription">Acerte para ganhar <strong>+10 pontos</strong>. Complete 5 acertos seguidos para ganhar <strong>+50 pontos extras</strong>!</p>
         <p class="red-question" id="redQuestQuestion">Carregando pergunta...</p>
         <div class="student-registered-name" id="redQuestRegisteredStudent">👤 Aluno conectado</div>
         <div class="red-choices" role="radiogroup" aria-label="Sua resposta">
@@ -1447,6 +1447,9 @@ let redQuestSubmitting = false;
 let manualRedQuestStatus = null;
 let manualBlueHighlightedIds = new Set();
 let blueRecentAttacks = new Map();
+let blueBlockedTargetIds = new Set();
+let serverQuestProgress = null;
+const QUEST_DONE_STORAGE_KEY = 'alienbot-done-rounds-v2';
 let redAttackMode = 'auto';
 let bluePendingReward = 0;
 let bluePendingPenalty = 10;
@@ -1467,6 +1470,70 @@ try {
 }
 
 const $ = (id) => document.getElementById(id);
+
+/* Os icones somem APENAS para o aluno que concluiu a rodada.
+   Cada rodada possui uma chave unica; outros alunos continuam vendo a QUEST. */
+function questRoundKey(mode) {
+  if (!studentAccount?.student_id) return null;
+  const status = mode === 'gold' ? questStatus : mode === 'red' ? redQuestStatus : manualRedQuestStatus;
+  const moment = status?.starts_at || status?.ends_at;
+  if (!moment) return null;
+  return `${studentAccount.student_id}:${mode}:${new Date(moment).getTime()}`;
+}
+function questDoneLocally(mode) {
+  const key = questRoundKey(mode);
+  if (!key) return false;
+  try { return Boolean(JSON.parse(localStorage.getItem(QUEST_DONE_STORAGE_KEY) || '{}')[key]); }
+  catch (_) { return false; }
+}
+function questAlreadyCompleted(mode) {
+  if (questDoneLocally(mode)) return true;
+  if (!studentAccount?.student_id || !serverQuestProgress) return false;
+  if (mode === 'red' && redQuestStatus?.starts_at) {
+    const id = Math.floor(new Date(redQuestStatus.starts_at).getTime()/1000);
+    return id === Number(serverQuestProgress.red_quest_id) && serverQuestProgress.red_done === true;
+  }
+  if (mode === 'blue' && manualRedQuestStatus?.quest_id) {
+    return Number(manualRedQuestStatus.quest_id) === Number(serverQuestProgress.blue_quest_id)
+      && serverQuestProgress.blue_done === true;
+  }
+  return false;
+}
+function markQuestCompleted(mode) {
+  const key = questRoundKey(mode);
+  if (!key) return;
+  try {
+    const now=Date.now();
+    const raw=JSON.parse(localStorage.getItem(QUEST_DONE_STORAGE_KEY) || '{}');
+    const data={};
+    for (const [k,v] of Object.entries(raw)) {
+      if (Number.isFinite(Number(v)) && now-Number(v)<7*86400000) data[k]=v;
+    }
+    data[key]=now;
+    localStorage.setItem(QUEST_DONE_STORAGE_KEY,JSON.stringify(data));
+  } catch (error) { console.warn('Nao foi possivel salvar a rodada localmente:',error.message); }
+  updateQuestVisibility();
+}
+function updateQuestVisibility() {
+  if ($('questButton')) $('questButton').hidden = !(questStatus?.active && Date.now() < new Date(questStatus.ends_at).getTime()) || questAlreadyCompleted('gold');
+  if ($('redQuestButton')) $('redQuestButton').hidden = !isRedQuestActive(redQuestStatus) || questAlreadyCompleted('red');
+  if ($('manualRedQuestButton')) $('manualRedQuestButton').hidden = !isRedQuestActive(manualRedQuestStatus) || questAlreadyCompleted('blue');
+}
+async function refreshStudentQuestProgress() {
+  if (!studentAccount?.session_token || studentAccount.must_change_pin) {
+    serverQuestProgress = null;
+    updateQuestVisibility();
+    return;
+  }
+  try {
+    serverQuestProgress = await questRpc('alienbot_student_quest_progress', {
+      p_student_session:studentAccount.session_token
+    });
+    updateQuestVisibility();
+  } catch (error) {
+    console.warn('Verificacao de participacao nas QUESTs indisponivel:',error.message);
+  }
+}
 
 const sorted = () =>
   [...students].sort((a,b) =>
@@ -1723,6 +1790,7 @@ async function restoreStudentLogin() {
     localStorage.removeItem(STUDENT_SESSION_KEY);
   }
   showStudentIdentity();
+  await refreshStudentQuestProgress();
   if (studentAccount?.must_change_pin) openStudentChangePin();
 }
 async function loginStudent() {
@@ -1747,6 +1815,7 @@ async function loginStudent() {
     };
     localStorage.setItem(STUDENT_SESSION_KEY,JSON.stringify(studentAccount));
     showStudentIdentity();
+    await refreshStudentQuestProgress();
     const requested = pendingStudentQuest;
     closeStudentLogin();
     if (studentAccount.must_change_pin) {
@@ -1792,6 +1861,7 @@ async function studentChangePin() {
     $('studentConfirmPin').value='';
     $('studentChangePinOverlay').hidden=true;
     showStudentIdentity();
+    await refreshStudentQuestProgress();
     continueAfterStudentAccess();
   } catch(error) {
     $('studentChangePinMessage').textContent=error.message || 'Falha ao trocar o PIN.';
@@ -1801,7 +1871,9 @@ async function logoutStudent() {
   const token = studentAccount?.session_token;
   studentAccount=null;
   pendingStudentQuest=null;
+  serverQuestProgress=null;
   localStorage.removeItem(STUDENT_SESSION_KEY);
+  updateQuestVisibility();
   $('studentChangePinOverlay').hidden=true;
   $('studentLoginOverlay').hidden=true;
   showStudentIdentity();
@@ -1850,7 +1922,8 @@ async function refreshQuest() {
     questHighlightedIds = new Set((questStatus?.highlighted_student_ids || []).map(String));
     const active = Boolean(questStatus?.active) && Date.now() < new Date(questStatus.ends_at).getTime();
     $('questButton').hidden = !active;
-    if (!active && !$('questOverlay').hidden) closeQuestModal();
+    updateQuestVisibility();
+    if ((!active || questAlreadyCompleted('gold')) && !$('questOverlay').hidden) closeQuestModal();
     render();
     updateQuestCountdown();
   } catch (error) {
@@ -1861,6 +1934,7 @@ async function refreshQuest() {
 function openQuestModal() {
   if (!questStatus?.active || Date.now() >= new Date(questStatus.ends_at).getTime()) return;
   if (!requireStudentLogin('gold')) return;
+  if (questAlreadyCompleted('gold')) { updateQuestVisibility(); return; }
   $('questMessage').textContent = '';
   $('questRegisteredStudent').textContent = `👤 ${studentAccount.student_name}`;
   $('claimQuest').textContent = 'RESGATAR +3 PONTOS';
@@ -1881,6 +1955,7 @@ async function claimAlienQuest() {
     if (result?.success === false) throw new Error(result?.message || 'Não foi possível resgatar.');
 
     // Só fecha após o Supabase confirmar o resgate e os pontos.
+    markQuestCompleted('gold');
     closeQuestModal();
     showQuestFeedback(result?.message || 'QUEST concluída! Você ganhou 3 pontos!', 'gold');
 
@@ -1928,7 +2003,8 @@ async function refreshRedQuest() {
     redQuestHighlightedIds = new Set((redQuestStatus?.highlighted_student_ids || []).map(String));
     const active = isRedQuestActive(redQuestStatus);
     $('redQuestButton').hidden = !active;
-    if (!active && redQuestMode === 'auto' && !$('redQuestOverlay').hidden) closeRedQuestModal();
+    updateQuestVisibility();
+    if ((!active || questAlreadyCompleted('red')) && redQuestMode === 'auto' && !$('redQuestOverlay').hidden) closeRedQuestModal();
     render();
     updateRedQuestCountdown();
   } catch (error) {
@@ -1941,10 +2017,12 @@ async function refreshManualRedQuest() {
     manualRedQuestStatus = await questRpc('alienbot_manual_red_quest_status');
     manualBlueHighlightedIds = new Set((manualRedQuestStatus?.highlighted_student_ids || []).map(String));
     blueRecentAttacks = new Map((manualRedQuestStatus?.recent_attacks || []).map(a => [String(a.student_id), a]));
+    blueBlockedTargetIds = new Set((manualRedQuestStatus?.blocked_target_ids || []).map(String));
     const active = isRedQuestActive(manualRedQuestStatus);
     render();
     $('manualRedQuestButton').hidden = !active;
-    if (!active && redQuestMode === 'manual' && !$('redQuestOverlay').hidden) closeRedQuestModal();
+    updateQuestVisibility();
+    if ((!active || questAlreadyCompleted('blue')) && redQuestMode === 'manual' && !$('redQuestOverlay').hidden) closeRedQuestModal();
     if (session?.access_token) {
       $('manualRedStatus').textContent = active
         ? `💎 QUEST Azul ativa até ${new Date(manualRedQuestStatus.ends_at).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})} — ganha +${manualRedQuestStatus.points_reward}, adversário perde ${manualRedQuestStatus.points_penalty ?? 10} pontos.`
@@ -1955,6 +2033,7 @@ async function refreshManualRedQuest() {
     $('manualRedQuestButton').hidden = true;
     manualBlueHighlightedIds = new Set();
     blueRecentAttacks = new Map();
+    blueBlockedTargetIds = new Set();
     console.warn('Quest manual indisponível:', error.message);
   }
 }
@@ -1995,6 +2074,7 @@ function openRedQuestModal(mode = 'auto') {
   const status = activeRedQuest();
   if (!isRedQuestActive(status)) return;
   if (!requireStudentLogin(mode)) return;
+  if (questAlreadyCompleted(mode === 'manual' ? 'blue' : 'red')) { updateQuestVisibility(); return; }
   const reward = mode === 'manual' ? Number(status.points_reward) : 10;
   const overlay = $('redQuestOverlay');
   const card = overlay.querySelector('.red-quest-card');
@@ -2002,12 +2082,12 @@ function openRedQuestModal(mode = 'auto') {
   const emblem = overlay.querySelector('.red-quest-emblem');
   card.classList.toggle('manual-blue-mode', mode === 'manual');
   $('redQuestTitle').textContent = mode === 'manual' ? 'QUEST AZUL' : 'QUEST DE FOGO';
-  eyebrow.textContent = mode === 'manual' ? 'MISSÃO DO PROFESSOR • DIAMANTE' : 'DESAFIO PVP • CONHECIMENTO';
+  eyebrow.textContent = mode === 'manual' ? 'MISSÃO DO PROFESSOR • DIAMANTE' : 'DESAFIO DE CONHECIMENTO • SEQUÊNCIA';
   emblem.textContent = mode === 'manual' ? '👽' : '🔥';
   $('redQuestQuestion').textContent = status.question || 'Pergunta indisponível.';
   $('redQuestDescription').innerHTML = mode === 'manual'
     ? `💎 QUEST AZUL: acerte e escolha OBRIGATORIAMENTE outro aluno para perder <strong>${status.points_penalty ?? 10} pontos</strong>. Você receberá <strong>+${reward} pontos</strong>, fogo azul e diamante depois de confirmar o ataque!`
-    : 'Acerte uma questão para ganhar <strong>+10 pontos</strong> e atacar um adversário!';
+    : 'Acerte para ganhar <strong>+10 pontos</strong>. Ao acertar <strong>5 QUESTs vermelhas seguidas</strong>, ganhe mais <strong>50 pontos</strong>! Um erro ou uma hora perdida zera a sequência.';
   $('redQuestRegisteredStudent').textContent = `👤 ${studentAccount.student_name}`;
   document.querySelectorAll('input[name="redQuestAnswer"]').forEach(input => {input.checked = false;input.disabled = false;});
   $('redQuestMessage').textContent = '';
@@ -2060,6 +2140,7 @@ function openRedAttackModal(token, studentName, options = null) {
   const available = sorted().filter(s =>
     s.name.toLocaleLowerCase('pt-BR').trim() !== studentName.toLocaleLowerCase('pt-BR').trim()
     && Number(s.points) >= penalty
+    && (!blue || !blueBlockedTargetIds.has(String(s.id)))
   );
   const target = $('redAttackTarget');
   target.innerHTML = '<option value="">Escolha um adversário...</option>' +
@@ -2067,7 +2148,7 @@ function openRedAttackModal(token, studentName, options = null) {
   $('confirmRedAttack').disabled = !available.length;
   if (!available.length) {
     $('redAttackMessage').textContent = blue
-      ? `Nenhum adversário possui ${penalty} pontos. Peça ao professor para ajustar o próximo desafio.`
+      ? `Nenhum adversário disponível: cada aluno só pode sofrer um ataque nesta QUEST Boss e precisa ter pelo menos ${penalty} pontos.`
       : 'Nenhum adversário tem 10 pontos disponíveis para o ataque.';
   }
   $('redAttackOverlay').hidden = false;
@@ -2095,6 +2176,17 @@ async function confirmRedAttack() {
     } catch (updateError) {console.warn('Ataque confirmado, atualize o ranking:',updateError);}
   } catch (error) {
     $('redAttackMessage').textContent = error.message || 'Não foi possível atacar.';
+    if (isBlue) {
+      try {
+        await Promise.all([refreshManualRedQuest(),loadStudents()]);
+        const selected = $('redAttackTarget');
+        for (const option of [...selected.options]) {
+          if (option.value && blueBlockedTargetIds.has(option.value)) option.remove();
+        }
+        selected.value = '';
+        $('confirmRedAttack').disabled = selected.options.length<=1;
+      } catch (_refreshError) { /* Mensagem principal ja esta visivel. */ }
+    }
   } finally {
     redAttackSubmitting = false;
     button.disabled = false;
@@ -2119,7 +2211,8 @@ async function claimRedQuest() {
     });
     if (result?.success === false) throw new Error(result?.message || 'Resposta não registrada.');
 
-    // A janela da QUEST fecha após o envio confirmado, como você pediu.
+    // Aluno nao visualiza novamente esta rodada, mesmo que tenha errado.
+    markQuestCompleted(isManual ? 'blue' : 'red');
     closeRedQuestModal();
     showQuestFeedback(result?.message || 'Resposta registrada!', result?.correct && isManual ? 'blue' : (result?.correct ? 'fire' : 'miss'));
     try {
@@ -2128,13 +2221,11 @@ async function claimRedQuest() {
     } catch (updateError) {
       console.warn('Resposta registrada, mas não foi possível atualizar o ranking:', updateError);
     }
-    // Na QUEST Azul a recompensa fica PENDENTE até confirmar o ataque.
-    // Vermelha automática: mantém o ataque opcional original de 10 pontos.
+    // Apenas a BOSS AZUL permite ataque (obrigatorio para receber o premio).
+    // A QUEST vermelha agora concede +10 e bonus de +50 por sequencia, sem PvP.
     if (result?.correct && isManual && result?.blue_attack_token) {
       openRedAttackModal(result.blue_attack_token, result.student_name || name,
         {mode:'blue', points_reward:result.pending_reward, points_penalty:result.points_penalty});
-    } else if (result?.correct && result?.attack_token) {
-      openRedAttackModal(result.attack_token, result.student_name || name);
     }
   } catch (error) {
     $('redQuestMessage').textContent = error.message || 'Não foi possível registrar sua participação.';
@@ -2644,6 +2735,8 @@ async function start() {
   }, 10000);
 
   await Promise.all([refreshQuest(), refreshRedQuest(),refreshManualRedQuest()]);
+  await refreshStudentQuestProgress();
+  setInterval(refreshStudentQuestProgress, 5000);
   setInterval(refreshQuest, 5000);
   setInterval(refreshRedQuest, 5000);
   setInterval(refreshManualRedQuest, 5000);
