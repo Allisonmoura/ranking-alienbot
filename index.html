@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -894,6 +895,40 @@ main > header {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
 }
+
+/* AVISO DISCRETO: A JANELA DA QUEST FECHA APÓS RESPOSTA CONFIRMADA */
+.quest-feedback-toast {
+  position: fixed;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  width: min(calc(100vw - 32px), 480px);
+  padding: 15px 19px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 900;
+  border-radius: 14px;
+  border: 1px solid #ffd45c;
+  color: #ffe394;
+  background: #211704;
+  box-shadow: 0 12px 35px #000a, 0 0 25px #e3a51266;
+  pointer-events: none;
+}
+.quest-feedback-toast[hidden] {display: none !important}
+.quest-feedback-toast.fire {
+  border-color: #ff642e;
+  color: #ffca75;
+  background: #280b05;
+  box-shadow: 0 12px 35px #000a, 0 0 26px #ff420077;
+}
+.quest-feedback-toast.miss {
+  border-color: #777;
+  color: #f0f0f0;
+  background: #181818;
+  box-shadow: 0 12px 35px #000a;
+}
+
 </style>
 </head>
 
@@ -968,6 +1003,10 @@ main > header {
         <p id="redQuestCountdown" class="quest-countdown"></p>
       </div>
     </div>
+
+
+    <!-- Mensagem rápida após o fechamento automático de qualquer QUEST -->
+    <div id="questFeedbackToast" class="quest-feedback-toast" role="status" aria-live="polite" hidden></div>
 
     <div class="profile-overlay" id="profileOverlay"
          role="dialog" aria-modal="true" aria-labelledby="profileName">
@@ -1531,6 +1570,22 @@ function setAdminState(loggedIn) {
 }
 
 
+
+/* Mostra resultado sem reabrir a janela; desaparece automaticamente. */
+let questFeedbackTimer = null;
+function showQuestFeedback(message, variant) {
+  const toast = $('questFeedbackToast');
+  if (!toast) return;
+  if (questFeedbackTimer !== null) clearTimeout(questFeedbackTimer);
+  toast.textContent = message;
+  toast.className = 'quest-feedback-toast' + (variant ? ' ' + variant : '');
+  toast.hidden = false;
+  questFeedbackTimer = setTimeout(() => {
+    toast.hidden = true;
+    questFeedbackTimer = null;
+  }, 4000);
+}
+
 /* ALIEN QUEST — O SUPABASE CONTROLA O RELÓGIO E A RECOMPENSA */
 async function questRpc(functionName, payload = {}) {
   const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${functionName}`, {
@@ -1587,17 +1642,26 @@ async function claimAlienQuest() {
   $('questMessage').textContent = 'Conferindo sua participação...';
   try {
     const result = await questRpc('alienbot_claim_quest', {p_student_name:name});
-    $('questMessage').textContent = result?.message || 'Missão concluída! Você recebeu 3 pontos.';
-    $('questStudentName').disabled = true;
-    $('claimQuest').textContent = 'RECOMPENSA RESGATADA';
-    await loadStudents();
-    await refreshQuest();
+    if (result?.success === false) throw new Error(result?.message || 'Não foi possível resgatar.');
+
+    // Só fecha após o Supabase confirmar o resgate e os pontos.
+    closeQuestModal();
+    showQuestFeedback(result?.message || 'QUEST concluída! Você ganhou 3 pontos!', 'gold');
+
+    // Falha ao atualizar a tela não deve ser confundida com falha no resgate.
+    try {
+      await loadStudents();
+      await refreshQuest();
+    } catch (updateError) {
+      console.warn('Resgate confirmado, mas não foi possível atualizar o ranking:', updateError);
+    }
   } catch (error) {
+    // Em caso de falha real, mantém a janela aberta para mostrar o motivo.
     $('questMessage').textContent = error.message || 'Não foi possível resgatar a recompensa.';
   } finally {
     questSubmitting = false;
     $('claimQuest').disabled = false;
-    if (!$('questStudentName').disabled) $('claimQuest').textContent = 'RESGATAR +3 PONTOS';
+    $('claimQuest').textContent = 'RESGATAR +3 PONTOS';
   }
 }
 
@@ -1659,18 +1723,26 @@ async function claimRedQuest() {
       p_student_name: name,
       p_answer: checked.value === 'true'
     });
-    $('redQuestMessage').textContent = result?.message || (result?.correct ? 'Acertou!' : 'Resposta incorreta.');
-    $('redQuestStudentName').disabled = true;
-    document.querySelectorAll('input[name="redQuestAnswer"]').forEach(input => input.disabled = true);
-    $('claimRedQuest').textContent = result?.correct ? '🔥 10 PONTOS CONQUISTADOS!' : 'PARTICIPAÇÃO ENCERRADA';
-    await loadStudents();
-    await refreshRedQuest();
+    if (result?.success === false) throw new Error(result?.message || 'Resposta não registrada.');
+
+    // Acerto OU erro confirmado: a tentativa foi registrada e a janela fecha.
+    closeRedQuestModal();
+    const message = result?.message || (result?.correct ? '🔥 ACERTOU! +10 pontos!' : 'Resposta incorreta. Tente na próxima QUEST!');
+    showQuestFeedback(message, result?.correct ? 'fire' : 'miss');
+
+    try {
+      await loadStudents();
+      await refreshRedQuest();
+    } catch (updateError) {
+      console.warn('Resposta registrada, mas não foi possível atualizar o ranking:', updateError);
+    }
   } catch (error) {
+    // Erro de comunicação/validação: não fechar, pois o resgate não foi confirmado.
     $('redQuestMessage').textContent = error.message || 'Não foi possível registrar sua participação.';
-    $('claimRedQuest').disabled = false;
-    $('claimRedQuest').textContent = 'ENVIAR RESPOSTA • +10 PONTOS';
   } finally {
     redQuestSubmitting = false;
+    $('claimRedQuest').disabled = false;
+    $('claimRedQuest').textContent = 'ENVIAR RESPOSTA • +10 PONTOS';
   }
 }
 
