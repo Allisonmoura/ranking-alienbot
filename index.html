@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -47,28 +46,6 @@ body {
     radial-gradient(ellipse at 50% -15%, #ffffff18, transparent 55%),
     radial-gradient(circle at 95% 55%, #ffffff0c, transparent 30%),
     radial-gradient(circle at 5% 85%, #ffffff08, transparent 28%);
-}
-
-/* EFEITO MATRIX */
-
-#matrixCanvas {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-  opacity: .25;
-}
-
-/* CORREÇÃO: O CANVAS DOS CIRCUITOS NÃO DEVE EMPURRAR O CONTEÚDO */
-#circuitCanvas {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
 }
 
 main {
@@ -1053,14 +1030,61 @@ main > header {
 .quest-feedback-toast.blue{border-color:#55cfff;color:#c9f5ff;background:#071d31;box-shadow:0 12px 35px #000a,0 0 28px #3196ff66}
 @media(max-width:520px){.blue-attack-note{margin-left:11px;font-size:10px}}
 @media(max-width:520px){.manual-fire-actions .field{width:100%}.manual-fire-start{width:100%}}
+
+/* ALIENBOT — NOMES NEON FIXOS, SEM ANIMAÇÕES OU EFEITOS
+   As classes continuam as mesmas para preservar a prioridade das três QUESTs. */
+.quest-highlight,
+.fire-highlight,
+.blue-fire-highlight {
+  position: static !important;
+  display: inline !important;
+  isolation: auto !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: auto !important;
+  font-weight: 900 !important;
+  line-height: inherit !important;
+  vertical-align: baseline !important;
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+.quest-highlight {
+  color: #39ff75 !important;
+  -webkit-text-fill-color: #39ff75 !important;
+}
+.fire-highlight {
+  color: #ff4058 !important;
+  -webkit-text-fill-color: #ff4058 !important;
+}
+.blue-fire-highlight {
+  color: #47d9ff !important;
+  -webkit-text-fill-color: #47d9ff !important;
+}
+.fire-highlight::before, .fire-highlight::after,
+.blue-fire-highlight::before, .blue-fire-highlight::after,
+.quest-highlight::before, .quest-highlight::after {
+  content: none !important;
+  display: none !important;
+  animation: none !important;
+}
+.alienbot-fire-canvas { display: none !important; }
+
 </style>
 </head>
 
 <body>
 <div id="app">
   <div class="bg-glow" aria-hidden="true"></div>
-  <canvas id="matrixCanvas" aria-hidden="true"></canvas>
-  <canvas id="circuitCanvas" aria-hidden="true"></canvas>
 
   <main>
     <header>
@@ -1323,249 +1347,6 @@ main > header {
 </div>
 
 <script>
-/* =====================================
-   EFEITO MATRIX - NÚMEROS BINÁRIOS
-===================================== */
-
-(function startMatrix() {
-  const canvas = document.getElementById('matrixCanvas');
-  const ctx = canvas.getContext('2d');
-
-  let width = 0;
-  let height = 0;
-  let columns = [];
-  let fontSize = 13;
-  let animationId = null;
-  let lastFrame = 0;
-
-  const reducedMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)'
-  ).matches;
-
-  function resizeMatrix() {
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-
-    width = window.innerWidth;
-    height = window.innerHeight;
-
-    canvas.width = Math.floor(width * ratio);
-    canvas.height = Math.floor(height * ratio);
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-
-    fontSize = width < 600 ? 11 : 13;
-
-    const count = Math.ceil(width / fontSize);
-
-    columns = Array.from({ length: count }, () => ({
-      y: Math.random() * height,
-      speed: 0.5 + Math.random() * 1.1
-    }));
-  }
-
-  function drawMatrix(timestamp) {
-    if (timestamp - lastFrame < 45) {
-      animationId = requestAnimationFrame(drawMatrix);
-      return;
-    }
-
-    lastFrame = timestamp;
-
-    ctx.fillStyle = 'rgba(5,5,5,0.09)';
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.font = `${fontSize}px monospace`;
-
-    columns.forEach((column, index) => {
-      const digit = Math.random() > 0.5 ? '1' : '0';
-      const x = index * fontSize;
-      const y = column.y;
-
-      ctx.fillStyle = Math.random() > 0.96
-        ? 'rgba(255,255,255,0.75)'
-        : 'rgba(220,220,220,0.48)';
-
-      ctx.fillText(digit, x, y);
-
-      column.y += fontSize * column.speed;
-
-      if (column.y > height && Math.random() > 0.97) {
-        column.y = -Math.random() * 100;
-        column.speed = 0.5 + Math.random() * 1.1;
-      }
-    });
-
-    animationId = requestAnimationFrame(drawMatrix);
-  }
-
-  resizeMatrix();
-  window.addEventListener('resize', resizeMatrix);
-
-  if (!reducedMotion) {
-    animationId = requestAnimationFrame(drawMatrix);
-  } else {
-    ctx.clearRect(0, 0, width, height);
-  }
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      if (animationId) cancelAnimationFrame(animationId);
-      animationId = null;
-    } else if (!reducedMotion && !animationId) {
-      animationId = requestAnimationFrame(drawMatrix);
-    }
-  });
-})();
-
-
-/* =========================================
-   CIRCUITOS ELETRÔNICOS HORIZONTAIS
-========================================= */
-
-(function startCircuits() {
-  const canvas = document.getElementById('circuitCanvas');
-  const ctx = canvas.getContext('2d');
-
-  let width = 0;
-  let height = 0;
-  let circuits = [];
-  let animationId = null;
-  let lastFrame = 0;
-
-  const reducedMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)'
-  ).matches;
-
-  function createCircuit(randomPosition = true) {
-    return {
-      x: randomPosition ? Math.random() * width : -220,
-      y: Math.random() * height,
-      speed: 0.35 + Math.random() * 0.7,
-      length: 90 + Math.random() * 170,
-      height: 12 + Math.random() * 30,
-      direction: Math.random() > 0.5 ? 1 : -1,
-      opacity: 0.22 + Math.random() * 0.38,
-      phase: Math.random() * Math.PI * 2,
-      thickness: Math.random() > 0.75 ? 1.6 : 1
-    };
-  }
-
-  function resize() {
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    width = window.innerWidth;
-    height = window.innerHeight;
-
-    canvas.width = Math.floor(width * ratio);
-    canvas.height = Math.floor(height * ratio);
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-
-    const quantity = Math.max(8, Math.min(20, Math.floor(width / 75)));
-    circuits = Array.from({ length: quantity }, () => createCircuit(true));
-  }
-
-  function drawCircuit(c, time) {
-    const x = c.x;
-    const y = c.y;
-    const w = c.length;
-    const h = c.height * c.direction;
-    const pulse = (Math.sin(time * 0.002 + c.phase) + 1) / 2;
-
-    ctx.save();
-    ctx.lineWidth = c.thickness;
-    ctx.strokeStyle = `rgba(240,240,240,${c.opacity * (0.55 + pulse * 0.45)})`;
-    ctx.fillStyle = `rgba(255,255,255,${c.opacity * (0.55 + pulse * 0.45)})`;
-    ctx.shadowColor = 'rgba(255,255,255,0.65)';
-    ctx.shadowBlur = 4 + pulse * 6;
-
-    // Trilha principal com curvas em ângulo reto.
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + w * 0.22, y);
-    ctx.lineTo(x + w * 0.22, y + h);
-    ctx.lineTo(x + w * 0.62, y + h);
-    ctx.lineTo(x + w * 0.62, y + h * 0.32);
-    ctx.lineTo(x + w, y + h * 0.32);
-    ctx.stroke();
-
-    // Ramificação paralela.
-    ctx.beginPath();
-    ctx.moveTo(x + w * 0.42, y);
-    ctx.lineTo(x + w * 0.42, y - h * 0.72);
-    ctx.lineTo(x + w * 0.82, y - h * 0.72);
-    ctx.stroke();
-
-    // Pequenos terminais de conexão.
-    [
-      [x, y],
-      [x + w * 0.22, y],
-      [x + w * 0.22, y + h],
-      [x + w * 0.62, y + h],
-      [x + w, y + h * 0.32],
-      [x + w * 0.42, y - h * 0.72],
-      [x + w * 0.82, y - h * 0.72]
-    ].forEach(([px, py], i) => {
-      ctx.beginPath();
-      ctx.arc(px, py, i === 0 || i === 4 ? 2.1 : 1.5, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Pulso de luz percorrendo a trilha horizontal.
-    const progress = (time * 0.00018 + c.phase / (Math.PI * 2)) % 1;
-    const pulseX = x + w * progress;
-    ctx.beginPath();
-    ctx.arc(pulseX, y, 2.5, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${0.35 + pulse * 0.6})`;
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  function animate(time) {
-    if (time - lastFrame < 35) {
-      animationId = requestAnimationFrame(animate);
-      return;
-    }
-
-    lastFrame = time;
-    ctx.clearRect(0, 0, width, height);
-
-    circuits.forEach(c => {
-      drawCircuit(c, time);
-      c.x += c.speed * c.direction;
-
-      if (c.direction > 0 && c.x > width + c.length) {
-        c.x = -c.length - 40;
-        c.y = Math.random() * height;
-      } else if (c.direction < 0 && c.x < -c.length - 40) {
-        c.x = width + 40;
-        c.y = Math.random() * height;
-      }
-    });
-
-    animationId = requestAnimationFrame(animate);
-  }
-
-  resize();
-  window.addEventListener('resize', resize);
-
-  if (!reducedMotion) {
-    animationId = requestAnimationFrame(animate);
-  }
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      if (animationId) cancelAnimationFrame(animationId);
-      animationId = null;
-    } else if (!reducedMotion && !animationId) {
-      animationId = requestAnimationFrame(animate);
-    }
-  });
-})();
-
 /* =====================================
    SUPABASE E RANKING
 ===================================== */
@@ -2589,151 +2370,5 @@ async function start() {
 
 start();
 </script>
-<script>
-/* ALIENBOT: linguas de fogo animadas ATRAS do nome premiado na Quest de Fogo. */
-(function () {
-  'use strict';
-  const flames = new Set();
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let requestId = 0;
-  let lastFrame = 0;
-
-  function resize(flame) {
-    if (!flame.canvas.parentElement) return;
-    const px = flame.canvas.parentElement.getBoundingClientRect().width;
-    const w = Math.max(60, Math.min(480, Math.round(px * 1.05)));
-    if (flame.w === w) return;
-    flame.w = w;
-    flame.h = 85;
-    flame.canvas.width = w;
-    flame.canvas.height = flame.h;
-    flame.ctx = flame.canvas.getContext('2d', {alpha:true});
-  }
-
-  function tongue(ctx, x, bottom, height, width, sway, gradient, shadowBlur) {
-    const tipX = x + sway;
-    const top = bottom - height;
-    ctx.beginPath();
-    ctx.moveTo(x - width, bottom);
-    ctx.bezierCurveTo(x - width * 1.22, bottom - height * .30,
-      tipX - width * .28, top + height * .22, tipX, top);
-    ctx.bezierCurveTo(tipX + width * .50, top + height * .27,
-      x + width * .90, bottom - height * .27, x + width, bottom);
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.shadowBlur = shadowBlur;
-    ctx.shadowColor = '#f95302';
-    ctx.fill();
-  }
-
-  function draw(flame, ms) {
-    const ctx = flame.ctx;
-    if (!ctx) return;
-    const t = ms * .001;
-    const {w,h} = flame;
-    const isBlue = flame.canvas.parentElement?.classList.contains('blue-fire-highlight');
-    ctx.clearRect(0, 0, w, h);
-    const bottom = h - 5;
-    const floorGlow = ctx.createRadialGradient(w/2,bottom-4,0,w/2,bottom-4,w*.53);
-    floorGlow.addColorStop(0,isBlue ? 'rgba(102,225,255,.40)' : 'rgba(255,135,9,.41)');
-    floorGlow.addColorStop(.43,isBlue ? 'rgba(55,124,255,.20)' : 'rgba(255,54,0,.21)');
-    floorGlow.addColorStop(1,isBlue ? 'rgba(39,93,255,0)' : 'rgba(255,40,0,0)');
-    ctx.fillStyle=floorGlow;
-    ctx.fillRect(0,h*.48,w,h*.52);
-
-    const amount=Math.max(7,Math.ceil(w/22));
-    ctx.globalCompositeOperation='lighter';
-    for(let layer=0;layer<2;layer++){
-      for(let i=0;i<amount;i++){
-        const frac=(i+.5+(layer*.32))/amount;
-        const x=frac*w;
-        const wave=Math.sin(i*1.9 + t*2.1 + layer*.9);
-        const wave2=Math.sin(i*2.64 - t*1.35 + layer*3);
-        const height=h * (.32 + .28*(.5+.5*wave) + .19*(.5+.5*wave2));
-        const sway=Math.sin(t*2.3+i*1.4+layer)*w/amount*.47;
-        const width=w/amount*(layer===0?.70:.43);
-        const grad=ctx.createLinearGradient(0,bottom-height,0,bottom);
-        if (isBlue) {
-          grad.addColorStop(0,'rgba(19,64,255,.03)');
-          grad.addColorStop(.24,layer===0?'rgba(27,127,255,.72)':'rgba(34,176,255,.66)');
-          grad.addColorStop(.64,layer===0?'rgba(79,221,255,.90)':'rgba(111,241,255,.86)');
-          grad.addColorStop(1,layer===0?'rgba(211,248,255,.86)':'rgba(236,255,255,.92)');
-        } else {
-          grad.addColorStop(0,'rgba(246,31,0,.03)');
-          grad.addColorStop(.24,layer===0?'rgba(250,60,0,.74)':'rgba(255,95,4,.66)');
-          grad.addColorStop(.64,layer===0?'rgba(255,138,0,.91)':'rgba(255,177,15,.88)');
-          grad.addColorStop(1,layer===0?'rgba(255,207,39,.88)':'rgba(255,248,163,.86)');
-        }
-        tongue(ctx,x,bottom,height,width,sway,grad,layer===0?9:4);
-
-        if(layer===1){
-          const innerHeight=height*.59;
-          const glow=ctx.createLinearGradient(0,bottom-innerHeight,0,bottom);
-          if (isBlue) {
-            glow.addColorStop(0,'rgba(124,229,255,0)');
-            glow.addColorStop(.45,'rgba(145,238,255,.60)');
-            glow.addColorStop(1,'rgba(240,255,255,.88)');
-          } else {
-            glow.addColorStop(0,'rgba(255,189,34,0)');
-            glow.addColorStop(.45,'rgba(255,229,98,.63)');
-            glow.addColorStop(1,'rgba(255,252,204,.85)');
-          }
-          tongue(ctx,x,bottom,innerHeight,width*.52,sway*.33,glow,2);
-        }
-      }
-    }
-    ctx.shadowBlur=0;
-    ctx.globalCompositeOperation='source-over';
-    // Algumas fagulhas discretas deixam o movimento menos repetitivo.
-    for (let i=0;i<Math.max(3,Math.floor(w/62));i++) {
-      const phase=(t*(.38+i*.1)+i*.347)%1;
-      const sx=(i*.241+.3+.06*Math.sin(t*1.2+i*4))*w%w;
-      const sy=bottom-phase*h*.78;
-      const size=phase>.7? .65:1.2;
-      ctx.fillStyle = isBlue ? `rgba(${120+i*10}, ${225+i*4}, 255, ${(.7*(1-phase)).toFixed(2)})` : `rgba(255,${130+i*19},36,${(.7*(1-phase)).toFixed(2)})`;
-      ctx.beginPath();ctx.arc(sx,sy,size,0,Math.PI*2);ctx.fill();
-    }
-  }
-
-  function animate(ms){
-    requestId=0;
-    if(ms-lastFrame<40){requestId=requestAnimationFrame(animate);return;}
-    lastFrame=ms;
-    for (const flame of flames) {
-      if (!flame.canvas.isConnected) {flames.delete(flame); continue;}
-      resize(flame);
-      draw(flame,ms+flame.seed);
-    }
-    if(flames.size && !reduceMotion.matches) requestId=requestAnimationFrame(animate);
-  }
-
-  function attachFlames(){
-    document.querySelectorAll('.fire-highlight, .blue-fire-highlight').forEach(el=>{
-      if(el.querySelector(':scope > .alienbot-fire-canvas'))return;
-      const canvas=document.createElement('canvas');
-      canvas.className='alienbot-fire-canvas';
-      canvas.setAttribute('aria-hidden','true');
-      el.appendChild(canvas);
-      const flame={canvas,w:0,h:0,ctx:null,seed:Math.random()*3000};
-      flames.add(flame);resize(flame);draw(flame,flame.seed);
-    });
-    if(flames.size && !requestId && !reduceMotion.matches)requestId=requestAnimationFrame(animate);
-  }
-  function init(){
-    attachFlames();
-    const observer=new MutationObserver(attachFlames);
-    ['rankingRows','podium'].map(id=>document.getElementById(id)).filter(Boolean).forEach(node=>
-      observer.observe(node,{childList:true,subtree:true}));
-    window.addEventListener('resize',attachFlames,{passive:true});
-    reduceMotion.addEventListener('change',()=>{
-      if(flames.size && !requestId && !reduceMotion.matches) requestId=requestAnimationFrame(animate);
-    });
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
-  else init();
-})();
-
-</script>
 </body>
 </html>
-	
