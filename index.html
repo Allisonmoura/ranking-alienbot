@@ -1045,6 +1045,13 @@ main > header {
 .attack-card #redAttackTarget{border-color:#b54a2c;background:#140806;color:#fff}
 .attack-card .quest-description{margin-bottom:16px}
 #redAttackMessage{color:#ffb078}
+#closeRedAttack[hidden], #skipRedAttack[hidden]{display:none!important}
+.attack-card.manual-blue-mode #redAttackTarget{border-color:#4cbaff;background:#061c36;color:#dbf5ff}
+/* QUEST AZUL: registro do ultimo ataque (somente na CLASSIFICACAO GERAL) */
+.blue-attack-note{display:inline-flex;vertical-align:middle;align-items:center;gap:.35em;margin-left:18px;margin-top:4px;padding:4px 9px;border:1px solid #3b90d955;border-radius:999px;background:linear-gradient(100deg,#062946b3,#0b3b5f6e);color:#b3ebff;font-size:11px;font-weight:750;letter-spacing:.01em;line-height:1.35;white-space:normal;max-width:min(100%,440px);box-shadow:0 0 10px #3eafff22}
+.blue-attack-note::before{content:'💎';font-size:12px}
+.quest-feedback-toast.blue{border-color:#55cfff;color:#c9f5ff;background:#071d31;box-shadow:0 12px 35px #000a,0 0 28px #3196ff66}
+@media(max-width:520px){.blue-attack-note{margin-left:11px;font-size:10px}}
 @media(max-width:520px){.manual-fire-actions .field{width:100%}.manual-fire-start{width:100%}}
 </style>
 </head>
@@ -1063,7 +1070,7 @@ main > header {
         <span>ALIENBOT</span>
         <button id="questButton" class="quest-button" type="button" aria-label="Abrir Alien Quest" title="Alien Quest" hidden>?</button>
         <button id="redQuestButton" class="red-quest-button" type="button" aria-label="Abrir QUEST de Fogo automática" title="QUEST de Fogo automática • +10 pontos" hidden>🔥</button>
-        <button id="manualRedQuestButton" class="red-quest-button manual-quest-button" type="button" aria-label="Abrir QUEST de Fogo liberada pelo professor" title="QUEST de Fogo especial do professor" hidden>⚔</button>
+        <button id="manualRedQuestButton" class="red-quest-button manual-quest-button" type="button" aria-label="Abrir QUEST Azul liberada pelo professor" title="QUEST Azul especial do professor" hidden>👽</button>
       </div>
 
       <div class="tag">OBR · RESGATE/ARTÍSTICA</div>
@@ -1130,7 +1137,7 @@ main > header {
         <div class="red-quest-emblem" aria-hidden="true">⚔️</div>
         <p class="quest-eyebrow">ATAQUE PVP DESBLOQUEADO</p>
         <h2 id="redAttackTitle">ESCOLHA SEU ALVO</h2>
-        <p class="quest-description">Você acertou e ganhou seus pontos! Agora pode retirar <strong>10 pontos</strong> de outro aluno. Só pode atacar uma vez.</p>
+        <p class="quest-description" id="redAttackDescription">Você acertou e ganhou seus pontos! Agora pode retirar <strong>10 pontos</strong> de outro aluno. Só pode atacar uma vez.</p>
         <label class="quest-label" for="redAttackTarget">Aluno adversário</label>
         <select id="redAttackTarget" aria-label="Escolher adversário"></select>
         <button id="confirmRedAttack" class="quest-claim red-claim" type="button">⚔️ ATACAR −10 PONTOS</button>
@@ -1218,13 +1225,17 @@ main > header {
         <!-- QUEST manual: visível no painel, mas somente o professor autenticado pode liberar -->
           <div class="manual-fire-admin">
             <div>
-              <strong>🔥 LIBERAR QUEST AZUL AGORA</strong>
-              <p class="notice">Essa QUEST especial vale os pontos que você definir. A automática continuará aparecendo de hora em hora.</p>
+              <strong>💎 LIBERAR QUEST AZUL AGORA</strong>
+              <p class="notice">Defina os pontos que o vencedor ganha e quantos pontos um adversário perde. O ataque será obrigatório. A QUEST vermelha automática continuará de hora em hora.</p>
             </div>
             <div class="manual-fire-actions">
               <div class="field">
-                <label for="manualRedPoints">PONTOS PELO ACERTO (1–100)</label>
+                <label for="manualRedPoints">PONTOS QUE O ALUNO GANHA (1–100)</label>
                 <input id="manualRedPoints" type="number" min="1" max="100" step="1" value="10">
+              </div>
+              <div class="field">
+                <label for="manualRedPenalty">PONTOS QUE O ADVERSÁRIO PERDE (0–100)</label>
+                <input id="manualRedPenalty" type="number" min="0" max="100" step="1" value="10">
               </div>
               <button id="startManualRedQuest" class="manual-fire-start" type="button">💎 LIBERAR QUEST AZUL</button>
             </div>
@@ -1576,6 +1587,10 @@ let redQuestHighlightedIds = new Set();
 let redQuestSubmitting = false;
 let manualRedQuestStatus = null;
 let manualBlueHighlightedIds = new Set();
+let blueRecentAttacks = new Map();
+let redAttackMode = 'auto';
+let bluePendingReward = 0;
+let bluePendingPenalty = 10;
 let redQuestMode = 'auto';
 let pendingRedAttackToken = null;
 let redAttackSubmitting = false;
@@ -1720,11 +1735,12 @@ function setAdminState(loggedIn) {
 
   // O cartão de QUEST permanece à vista no painel, mas só libera com login.
   $('manualRedPoints').disabled = !loggedIn;
+  $('manualRedPenalty').disabled = !loggedIn;
   $('startManualRedQuest').disabled = !loggedIn;
-  $('startManualRedQuest').textContent = loggedIn ? '🔥 LIBERAR QUEST' : '🔒 ENTRE PARA LIBERAR';
+  $('startManualRedQuest').textContent = loggedIn ? '💎 LIBERAR QUEST AZUL' : '🔒 ENTRE PARA LIBERAR';
   $('manualRedStatus').textContent = loggedIn
-    ? 'Professor conectado. Escolha os pontos e libere a QUEST especial.'
-    : 'Faça login como professor acima para liberar a QUEST vermelha.';
+    ? 'Professor conectado. Defina os pontos ganhos e os pontos retirados na QUEST Azul.'
+    : 'Faça login como professor acima para liberar a QUEST azul.';
 
   $('loginStatus').textContent = loggedIn
     ? 'Sessão do professor ativa.'
@@ -1871,37 +1887,52 @@ async function refreshManualRedQuest() {
   try {
     manualRedQuestStatus = await questRpc('alienbot_manual_red_quest_status');
     manualBlueHighlightedIds = new Set((manualRedQuestStatus?.highlighted_student_ids || []).map(String));
+    blueRecentAttacks = new Map((manualRedQuestStatus?.recent_attacks || []).map(a => [String(a.student_id), a]));
     const active = isRedQuestActive(manualRedQuestStatus);
+    render();
     $('manualRedQuestButton').hidden = !active;
     if (!active && redQuestMode === 'manual' && !$('redQuestOverlay').hidden) closeRedQuestModal();
     if (session?.access_token) {
       $('manualRedStatus').textContent = active
-        ? `⚔️ QUEST especial ativa até ${new Date(manualRedQuestStatus.ends_at).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})} — recompensa: ${manualRedQuestStatus.points_reward} pontos.`
+        ? `💎 QUEST Azul ativa até ${new Date(manualRedQuestStatus.ends_at).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})} — ganha +${manualRedQuestStatus.points_reward}, adversário perde ${manualRedQuestStatus.points_penalty ?? 10} pontos.`
         : 'Nenhuma QUEST manual ativa.';
     }
     updateRedQuestCountdown();
   } catch (error) {
     $('manualRedQuestButton').hidden = true;
     manualBlueHighlightedIds = new Set();
+    blueRecentAttacks = new Map();
     console.warn('Quest manual indisponível:', error.message);
   }
 }
 async function startManualRedQuest() {
   const button = $('startManualRedQuest');
-  const points = Number($('manualRedPoints').value);
-  if (!Number.isInteger(points) || points < 1 || points > 100) {
-    $('manualRedStatus').textContent = 'Escolha entre 1 e 100 pontos.';
+  const gainInput = $('manualRedPoints');
+  const lossInput = $('manualRedPenalty');
+  const points = Number(gainInput.value);
+  const penalty = Number(lossInput.value);
+  if (gainInput.value.trim() === '' || !Number.isInteger(points) || points < 1 || points > 100) {
+    $('manualRedStatus').textContent = 'Escolha pontos ganhos entre 1 e 100.';
     return;
   }
-  if (!confirm(`Liberar agora uma QUEST DE FOGO de ${points} pontos por 5 minutos?`)) return;
+  if (lossInput.value.trim() === '' || !Number.isInteger(penalty) || penalty < 0 || penalty > 100) {
+    $('manualRedStatus').textContent = 'Escolha pontos a retirar entre 0 e 100.';
+    return;
+  }
+  const eligible = students.filter(s => Number(s.points) >= penalty);
+  if (eligible.length < 2) {
+    $('manualRedStatus').textContent = 'Não há pelo menos dois alunos com pontos suficientes para escolher um adversário. Reduza a penalidade.';
+    return;
+  }
+  if (!confirm(`Liberar QUEST AZUL por 5 minutos? Acerto: +${points} pontos. Ataque obrigatório: −${penalty} pontos do adversário.`)) return;
   button.disabled = true;
-  $('manualRedStatus').textContent = 'Liberando QUEST para todos os alunos...';
+  $('manualRedStatus').textContent = 'Liberando QUEST azul para os alunos...';
   try {
-    const result = await teacherQuestRpc('alienbot_start_manual_red_quest', {p_points:points});
-    $('manualRedStatus').textContent = result?.message || 'QUEST especial liberada!';
+    const result = await teacherQuestRpc('alienbot_start_manual_red_quest', {p_points:points, p_penalty:penalty});
+    $('manualRedStatus').textContent = result?.message || 'QUEST Azul liberada!';
     await refreshManualRedQuest();
   } catch (error) {
-    $('manualRedStatus').textContent = error.message || 'Falha ao liberar QUEST.';
+    $('manualRedStatus').textContent = error.message || 'Falha ao liberar QUEST azul.';
   } finally {
     button.disabled = false;
   }
@@ -1921,7 +1952,7 @@ function openRedQuestModal(mode = 'auto') {
   emblem.textContent = mode === 'manual' ? '👽' : '🔥';
   $('redQuestQuestion').textContent = status.question || 'Pergunta indisponível.';
   $('redQuestDescription').innerHTML = mode === 'manual'
-    ? `💎 QUEST AZUL DO PROFESSOR: acerte para ganhar <strong>+${reward} pontos</strong>, receber fogo azul com diamante no nome e atacar um adversário!`
+    ? `💎 QUEST AZUL: acerte e escolha OBRIGATORIAMENTE outro aluno para perder <strong>${status.points_penalty ?? 10} pontos</strong>. Você receberá <strong>+${reward} pontos</strong>, fogo azul e diamante depois de confirmar o ataque!`
     : 'Acerte uma questão para ganhar <strong>+10 pontos</strong> e atacar um adversário!';
   $('redQuestStudentName').value = '';
   $('redQuestStudentName').disabled = false;
@@ -1940,22 +1971,52 @@ function closeRedQuestModal() {
 }
 
 function closeRedAttackModal() {
+  // QUEST Azul: não permite pular o alvo e abandonar a recompensa no meio do fluxo.
+  // Se fechar o navegador, nenhum ponto será creditado sem confirmar o ataque.
+  if (redAttackMode === 'blue' && pendingRedAttackToken) {
+    $('redAttackMessage').textContent = '💎 Para receber os pontos da QUEST Azul, você precisa escolher um adversário e confirmar o ataque.';
+    return;
+  }
   $('redAttackOverlay').hidden = true;
+  $('redAttackOverlay').querySelector('.red-quest-card').classList.remove('manual-blue-mode');
   pendingRedAttackToken = null;
+  redAttackMode = 'auto';
 }
-function openRedAttackModal(token, studentName) {
+function openRedAttackModal(token, studentName, options = null) {
   if (!token) return;
+  const blue = options?.mode === 'blue';
+  redAttackMode = blue ? 'blue' : 'auto';
   pendingRedAttackToken = token;
+  bluePendingReward = blue ? Number(options.points_reward) : 0;
+  bluePendingPenalty = blue ? Number(options.points_penalty) : 10;
+  const card = $('redAttackOverlay').querySelector('.red-quest-card');
+  card.classList.toggle('manual-blue-mode', blue);
+  $('redAttackTitle').textContent = blue ? 'ESCOLHA UM ADVERSÁRIO' : 'ESCOLHA SEU ALVO';
+  card.querySelector('.red-quest-emblem').textContent = blue ? '💎' : '⚔️';
+  card.querySelector('.quest-eyebrow').textContent = blue ? 'ATAQUE AZUL OBRIGATÓRIO' : 'ATAQUE PVP DESBLOQUEADO';
+  $('redAttackDescription').innerHTML = blue
+    ? `Você acertou! Para ganhar <strong>+${bluePendingReward} pontos</strong> e receber seu diamante, escolha outro aluno que perderá <strong>${bluePendingPenalty} pontos</strong>. A recompensa só será creditada após confirmar.`
+    : 'Você acertou e ganhou seus pontos! Agora pode retirar <strong>10 pontos</strong> de outro aluno. Só pode atacar uma vez.';
+  $('closeRedAttack').hidden = blue;
+  $('skipRedAttack').hidden = blue;
+  $('confirmRedAttack').textContent = blue
+    ? `💎 CONFIRMAR −${bluePendingPenalty} E GANHAR +${bluePendingReward}`
+    : '⚔️ ATACAR −10 PONTOS';
   $('redAttackMessage').textContent = '';
+  const penalty = blue ? bluePendingPenalty : 10;
   const available = sorted().filter(s =>
     s.name.toLocaleLowerCase('pt-BR').trim() !== studentName.toLocaleLowerCase('pt-BR').trim()
-    && Number(s.points) >= 10
+    && Number(s.points) >= penalty
   );
   const target = $('redAttackTarget');
   target.innerHTML = '<option value="">Escolha um adversário...</option>' +
     available.map(s => `<option value="${escapeHTML(s.id)}">${escapeHTML(s.name)} — ${s.points} pontos</option>`).join('');
   $('confirmRedAttack').disabled = !available.length;
-  if (!available.length) $('redAttackMessage').textContent = 'Nenhum adversário tem 10 pontos disponíveis para o ataque.';
+  if (!available.length) {
+    $('redAttackMessage').textContent = blue
+      ? `Nenhum adversário possui ${penalty} pontos. Peça ao professor para ajustar o próximo desafio.`
+      : 'Nenhum adversário tem 10 pontos disponíveis para o ataque.';
+  }
   $('redAttackOverlay').hidden = false;
 }
 async function confirmRedAttack() {
@@ -1965,15 +2026,20 @@ async function confirmRedAttack() {
   const button = $('confirmRedAttack');
   button.disabled = true;
   redAttackSubmitting = true;
-  $('redAttackMessage').textContent = 'Registrando ataque no ranking...';
+  $('redAttackMessage').textContent = 'Registrando a batalha no ranking...';
+  const isBlue = redAttackMode === 'blue';
   try {
-    const result = await questRpc('alienbot_red_attack', {
-      p_attack_token:pendingRedAttackToken,
-      p_target_student_id:targetId
-    });
+    const result = await questRpc(isBlue ? 'alienbot_blue_attack' : 'alienbot_red_attack', isBlue
+      ? {p_blue_attack_token:pendingRedAttackToken,p_target_student_id:targetId}
+      : {p_attack_token:pendingRedAttackToken,p_target_student_id:targetId});
+    if (result?.success === false) throw new Error(result?.message || 'Ataque não registrado.');
+    pendingRedAttackToken = null;
     closeRedAttackModal();
-    showQuestFeedback(result?.message || '⚔️ Ataque concluído!', 'fire');
-    await loadStudents();
+    showQuestFeedback(result?.message || '⚔️ Ataque concluído!', isBlue ? 'blue' : 'fire');
+    try {
+      await loadStudents();
+      if (isBlue) await refreshManualRedQuest();
+    } catch (updateError) {console.warn('Ataque confirmado, atualize o ranking:',updateError);}
   } catch (error) {
     $('redAttackMessage').textContent = error.message || 'Não foi possível atacar.';
   } finally {
@@ -2002,15 +2068,19 @@ async function claimRedQuest() {
 
     // A janela da QUEST fecha após o envio confirmado, como você pediu.
     closeRedQuestModal();
-    showQuestFeedback(result?.message || 'Resposta registrada!', result?.correct ? 'fire' : 'miss');
+    showQuestFeedback(result?.message || 'Resposta registrada!', result?.correct && isManual ? 'blue' : (result?.correct ? 'fire' : 'miss'));
     try {
       await loadStudents();
       await Promise.all([refreshRedQuest(),refreshManualRedQuest()]);
     } catch (updateError) {
       console.warn('Resposta registrada, mas não foi possível atualizar o ranking:', updateError);
     }
-    // O ataque é um diálogo separado do QUIZ, só aparece quando acertou.
-    if (result?.correct && result?.attack_token) {
+    // Na QUEST Azul a recompensa fica PENDENTE até confirmar o ataque.
+    // Vermelha automática: mantém o ataque opcional original de 10 pontos.
+    if (result?.correct && isManual && result?.blue_attack_token) {
+      openRedAttackModal(result.blue_attack_token, result.student_name || name,
+        {mode:'blue', points_reward:result.pending_reward, points_penalty:result.points_penalty});
+    } else if (result?.correct && result?.attack_token) {
       openRedAttackModal(result.attack_token, result.student_name || name);
     }
   } catch (error) {
@@ -2225,6 +2295,9 @@ function render() {
             <td class="rank-num">${i + 1}º</td>
             <td class="student-cell"><span class="${studentQuestClass(s.id)}">
               ${escapeHTML(s.name)}</span>
+              ${blueRecentAttacks.has(String(s.id))
+                ? `<span class="blue-attack-note">Tirou ${Number(blueRecentAttacks.get(String(s.id)).points_removed) || 0} pontos de ${escapeHTML(blueRecentAttacks.get(String(s.id)).target_name)}</span>`
+                : ''}
               ${
                 danger
                   ? '<span class="danger-label">⚠ ZONA DE PERIGO</span>'
