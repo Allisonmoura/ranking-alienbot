@@ -1079,6 +1079,21 @@ main > header {
 }
 .alienbot-fire-canvas { display: none !important; }
 
+/* IDENTIFICACAO SIMPLES DOS ALUNOS, SEM ALTERAR AS QUESTS */
+.student-login-strip{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;padding:8px 12px;margin:4px auto 8px;border:1px solid #28465d;background:#0c1720;border-radius:12px;max-width:650px;color:#bbecff;font-size:12px}
+.student-login-strip button{background:#173750;color:#d8f5ff;border:1px solid #4ca2d1;font-size:12px;padding:7px 11px}
+.student-login-card{border:1px solid #4f9fc4;background:linear-gradient(145deg,#122a3b,#080b13);box-shadow:0 15px 55px #000}
+.student-login-card h2{color:#b8edff;font-size:22px;letter-spacing:0}
+.student-login-card .quest-description{color:#c8e3ee}
+.student-login-card .quest-label{color:#b8edff}
+.student-login-card input,.student-login-card select{background:#08141e;border-color:#376d87}
+.student-login-card .quest-claim{color:#031926;background:linear-gradient(90deg,#abf0ff,#54baff)}
+.student-registered-name{margin:8px 0 14px;padding:9px 11px;border-radius:9px;border:1px solid #406078;background:#081720;color:#d3f5ff;font-size:13px;font-weight:850}
+.student-pin-admin{border:1px solid #366780;border-radius:12px;padding:14px;margin:0 0 18px;background:#0b1b25}
+.student-pin-admin strong{color:#9de5ff;font-size:13px}
+.student-pin-actions{display:grid;grid-template-columns:1.6fr 1fr auto;gap:10px;margin-top:12px;align-items:end}
+.student-pin-actions button{min-height:43px;color:#061923;background:#90deff}
+@media(max-width:680px){.student-pin-actions{grid-template-columns:1fr}}
 </style>
 </head>
 
@@ -1100,6 +1115,12 @@ main > header {
       <div class="tag">OBR · RESGATE/ARTÍSTICA</div>
     </header>
 
+    <div class="student-login-strip" aria-live="polite">
+      <span id="studentWelcome">👤 Para participar das QUESTs, entre com seu cadastro de aluno.</span>
+      <button id="studentLoginToggle" type="button">Entrar como aluno</button>
+      <button id="studentLogoutButton" type="button" hidden>Sair do cadastro</button>
+    </div>
+
     <section class="hero">
       <div class="kicker">Painel Avaliativo</div>
       <h1><span class="gradient">RANKING</span> ALIENBOT</h1>
@@ -1116,6 +1137,22 @@ main > header {
       <div class="podium" id="podium"></div>
     </section>
 
+    <!-- O aluno escolhe seu cadastro e informa o PIN UMA unica vez neste navegador. -->
+    <div class="quest-overlay" id="studentLoginOverlay" role="dialog" aria-modal="true" aria-labelledby="studentLoginTitle" hidden>
+      <div class="quest-card student-login-card">
+        <button id="closeStudentLogin" class="quest-close" type="button" aria-label="Fechar">×</button>
+        <div class="quest-emblem" aria-hidden="true">👽</div>
+        <h2 id="studentLoginTitle">ENTRAR COMO ALUNO</h2>
+        <p class="quest-description">Seu nome precisa estar cadastrado no ranking, e o professor deve ter criado seu PIN. Entre uma vez para participar sem digitar o nome nas QUESTs.</p>
+        <label class="quest-label" for="studentLoginStudent">Seu nome no ranking</label>
+        <select id="studentLoginStudent"><option value="">Selecione seu cadastro...</option></select>
+        <label class="quest-label" for="studentLoginPin" style="margin-top:13px">PIN do aluno (6 números)</label>
+        <input id="studentLoginPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9]{6}" placeholder="PIN de 6 números">
+        <button id="studentLoginButton" class="quest-claim" type="button">ENTRAR E PARTICIPAR</button>
+        <p id="studentLoginMessage" class="quest-message" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+
     <div class="quest-overlay" id="questOverlay" role="dialog" aria-modal="true" aria-labelledby="questTitle" hidden>
       <div class="quest-card">
         <button class="quest-close" id="closeQuest" type="button" aria-label="Fechar">×</button>
@@ -1123,8 +1160,7 @@ main > header {
         <p class="quest-eyebrow">MISSÃO ESPECIAL</p>
         <h2 id="questTitle">ALIEN QUEST</h2>
         <p class="quest-description">Confirme seu nome no ranking e resgate sua recompensa.</p>
-        <label class="quest-label" for="questStudentName">Nome do aluno</label>
-        <input id="questStudentName" type="text" maxlength="80" autocomplete="off" placeholder="Digite seu nome como aparece no ranking">
+        <div class="student-registered-name" id="questRegisteredStudent">👤 Aluno conectado</div>
         <button id="claimQuest" class="quest-claim" type="button">RESGATAR +3 PONTOS</button>
         <p id="questMessage" class="quest-message" role="status" aria-live="polite"></p>
         <p id="questCountdown" class="quest-countdown"></p>
@@ -1141,8 +1177,7 @@ main > header {
         <h2 id="redQuestTitle">QUEST DE FOGO</h2>
         <p class="quest-description" id="redQuestDescription">Acerte uma questão, ganhe <strong>+10 pontos</strong> e escolha um adversário para perder 10 pontos!</p>
         <p class="red-question" id="redQuestQuestion">Carregando pergunta...</p>
-        <label class="quest-label" for="redQuestStudentName">Seu nome no ranking</label>
-        <input id="redQuestStudentName" type="text" maxlength="80" autocomplete="off" placeholder="Nome igual ao do ranking">
+        <div class="student-registered-name" id="redQuestRegisteredStudent">👤 Aluno conectado</div>
         <div class="red-choices" role="radiogroup" aria-label="Sua resposta">
           <label class="red-choice"><input type="radio" name="redQuestAnswer" value="true"> VERDADEIRO</label>
           <label class="red-choice"><input type="radio" name="redQuestAnswer" value="false"> FALSO</label>
@@ -1266,6 +1301,22 @@ main > header {
             <p id="manualRedStatus" class="notice" role="status" aria-live="polite">Entre com sua conta de professor para habilitar este botão.</p>
           </div>
         <div class="admin-tools" id="adminTools" hidden>
+          <div class="student-pin-admin">
+            <strong>🔐 ACESSO DOS ALUNOS ÀS QUESTS</strong>
+            <p class="notice">Selecione um aluno já cadastrado e defina um PIN individual de 6 números. Ele entrará uma vez e poderá responder às três QUESTs sem digitar o nome. Trocar o PIN desconecta os dispositivos anteriores.</p>
+            <div class="student-pin-actions">
+              <div class="field">
+                <label for="teacherPinStudent">ALUNO CADASTRADO</label>
+                <select id="teacherPinStudent"><option value="">Selecione...</option></select>
+              </div>
+              <div class="field">
+                <label for="teacherStudentPin">PIN (6 NÚMEROS)</label>
+                <input id="teacherStudentPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9]{6}" placeholder="Ex.: 482731">
+              </div>
+              <button id="teacherSaveStudentPin" type="button">SALVAR PIN</button>
+            </div>
+            <p class="notice" id="teacherPinStatus" role="status"></p>
+          </div>
           <div class="form-grid">
             <div class="field wide">
               <label for="studentName">NOME DO ALUNO</label>
@@ -1354,8 +1405,11 @@ main > header {
 const SUPABASE_URL = 'https://cfmvitinrefjjhmaxgky.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_UPgE31ZOc8tKJs2ecbEgug_cIzujE7i';
 const SESSION_KEY = 'alienbot-teacher-session-v1';
+const STUDENT_SESSION_KEY = 'alienbot-student-access-v1';
 
 let students = [];
+let studentAccount = null;
+let pendingStudentQuest = null;
 let selectedId = null;
 let session = null;
 let refreshTimer = null;
@@ -1380,6 +1434,12 @@ try {
   session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
 } catch (e) {
   session = null;
+}
+
+try {
+  studentAccount = JSON.parse(localStorage.getItem(STUDENT_SESSION_KEY) || 'null');
+} catch (_) {
+  studentAccount = null;
 }
 
 const $ = (id) => document.getElementById(id);
@@ -1507,6 +1567,7 @@ async function loadStudents() {
   );
 
   render();
+  fillStudentSelectors();
   setConnection(true, 'Banco de dados conectado');
 }
 
@@ -1558,6 +1619,121 @@ async function questRpc(functionName, payload = {}) {
   if (!response.ok) throw new Error(data?.message || data?.error || body || `Erro ${response.status}`);
   return data;
 }
+/* IDENTIFICACAO DO ALUNO: PIN E TOKEN INDIVIDUAL VALIDADOS NO SUPABASE. */
+function fillStudentSelectors() {
+  for (const id of ['studentLoginStudent','teacherPinStudent']) {
+    const select = $(id);
+    if (!select) continue;
+    const current = select.value;
+    select.innerHTML = '<option value="">Selecione seu cadastro...</option>' +
+      [...students].sort((a,b) => a.name.localeCompare(b.name,'pt-BR'))
+        .map(s => `<option value="${escapeHTML(s.id)}">${escapeHTML(s.name)}</option>`).join('');
+    if (students.some(s => s.id===current)) select.value = current;
+  }
+}
+function showStudentIdentity() {
+  const hasStudent = Boolean(studentAccount?.session_token);
+  $('studentWelcome').textContent = hasStudent
+    ? `👤 Aluno conectado: ${studentAccount.student_name}`
+    : '👤 Para participar das QUESTs, entre com seu cadastro de aluno.';
+  $('studentLoginToggle').hidden = hasStudent;
+  $('studentLogoutButton').hidden = !hasStudent;
+}
+function openStudentLogin(questToOpen=null) {
+  if (questToOpen) pendingStudentQuest = questToOpen;
+  $('studentLoginMessage').textContent = '';
+  $('studentLoginPin').value = '';
+  $('studentLoginOverlay').hidden = false;
+  if (studentAccount?.student_id) $('studentLoginStudent').value = studentAccount.student_id;
+  $('studentLoginStudent').focus();
+}
+function closeStudentLogin() {
+  $('studentLoginOverlay').hidden = true;
+  pendingStudentQuest = null;
+}
+function requireStudentLogin(questToOpen) {
+  if (studentAccount?.session_token) return true;
+  openStudentLogin(questToOpen);
+  return false;
+}
+async function restoreStudentLogin() {
+  if (!studentAccount?.session_token) {studentAccount=null;showStudentIdentity();return;}
+  try {
+    const result = await questRpc('alienbot_student_status',{
+      p_student_session:studentAccount.session_token
+    });
+    if (!result?.authenticated) throw new Error('Sessão expirada');
+    studentAccount.student_id = result.student_id;
+    studentAccount.student_name = result.student_name;
+    localStorage.setItem(STUDENT_SESSION_KEY,JSON.stringify(studentAccount));
+  } catch (_error) {
+    studentAccount = null;
+    localStorage.removeItem(STUDENT_SESSION_KEY);
+  }
+  showStudentIdentity();
+}
+async function loginStudent() {
+  const studentId = $('studentLoginStudent').value;
+  const pin = $('studentLoginPin').value.trim();
+  if (!studentId || !/^[0-9]{6}$/.test(pin)) {
+    $('studentLoginMessage').textContent = 'Selecione seu cadastro e informe o PIN de 6 números.';
+    return;
+  }
+  const button=$('studentLoginButton');
+  button.disabled=true;
+  $('studentLoginMessage').textContent='Conferindo acesso...';
+  try {
+    const result=await questRpc('alienbot_student_login',{p_student_id:studentId,p_pin:pin});
+    if (!result?.success || !result.session_token) throw new Error(result?.message || 'Acesso não autorizado.');
+    studentAccount = {
+      student_id:result.student_id,
+      student_name:result.student_name,
+      session_token:result.session_token,
+      expires_at:result.expires_at
+    };
+    localStorage.setItem(STUDENT_SESSION_KEY,JSON.stringify(studentAccount));
+    showStudentIdentity();
+    const requested = pendingStudentQuest;
+    closeStudentLogin();
+    if (requested === 'gold') openQuestModal();
+    else if (requested === 'auto' || requested === 'manual') openRedQuestModal(requested);
+    else showQuestFeedback(`👽 Bem-vindo(a), ${studentAccount.student_name}!`,'blue');
+  } catch (error) {
+    $('studentLoginMessage').textContent=error.message || 'Não foi possível entrar.';
+  } finally {button.disabled=false;}
+}
+async function logoutStudent() {
+  const token = studentAccount?.session_token;
+  studentAccount=null;
+  localStorage.removeItem(STUDENT_SESSION_KEY);
+  showStudentIdentity();
+  closeQuestModal();
+  closeRedQuestModal();
+  if(token) {
+    try {await questRpc('alienbot_student_logout',{p_student_session:token});}
+    catch (error){console.warn('Falha ao encerrar sessão de aluno no banco:',error.message);}
+  }
+}
+async function teacherSetStudentPin() {
+  const studentId=$('teacherPinStudent').value;
+  const pin=$('teacherStudentPin').value.trim();
+  if(!studentId || !/^[0-9]{6}$/.test(pin)) {
+    $('teacherPinStatus').textContent='Escolha um aluno e informe exatamente 6 números.';
+    return;
+  }
+  const button=$('teacherSaveStudentPin');
+  button.disabled=true;
+  $('teacherPinStatus').textContent='Salvando PIN com segurança...';
+  try {
+    const result=await teacherQuestRpc('alienbot_teacher_set_student_pin',{
+      p_student_id:studentId,p_pin:pin
+    });
+    $('teacherStudentPin').value='';
+    $('teacherPinStatus').textContent=`✅ ${result?.student_name || 'Aluno'}: PIN definido. Entregue o código somente ao aluno.`;
+  } catch(error) {
+    $('teacherPinStatus').textContent=error.message || 'Não foi possível definir o PIN.';
+  } finally {button.disabled=false;}
+}
 // Chamada protegida: só com sessão de professor ativa.
 async function teacherQuestRpc(functionName, payload = {}) {
   if (!session?.access_token) throw new Error('Entre na conta do professor.');
@@ -1587,25 +1763,24 @@ async function refreshQuest() {
 }
 function openQuestModal() {
   if (!questStatus?.active || Date.now() >= new Date(questStatus.ends_at).getTime()) return;
+  if (!requireStudentLogin('gold')) return;
   $('questMessage').textContent = '';
-  $('questStudentName').value = '';
-  $('questStudentName').disabled = false;
+  $('questRegisteredStudent').textContent = `👤 ${studentAccount.student_name}`;
   $('claimQuest').textContent = 'RESGATAR +3 PONTOS';
   $('questOverlay').hidden = false;
   updateQuestCountdown();
-  $('questStudentName').focus();
+
 }
 function closeQuestModal() { $('questOverlay').hidden = true; }
 async function claimAlienQuest() {
   if (questSubmitting) return;
-  const name = $('questStudentName').value.trim();
-  if (!name) { $('questMessage').textContent = 'Digite seu nome para continuar.'; return; }
+  if (!requireStudentLogin('gold')) return;
   questSubmitting = true;
   $('claimQuest').disabled = true;
   $('claimQuest').textContent = 'VALIDANDO...';
   $('questMessage').textContent = 'Conferindo sua participação...';
   try {
-    const result = await questRpc('alienbot_claim_quest', {p_student_name:name});
+    const result = await questRpc('alienbot_student_claim_gold', {p_student_session:studentAccount.session_token});
     if (result?.success === false) throw new Error(result?.message || 'Não foi possível resgatar.');
 
     // Só fecha após o Supabase confirmar o resgate e os pontos.
@@ -1722,6 +1897,7 @@ function openRedQuestModal(mode = 'auto') {
   redQuestMode = mode;
   const status = activeRedQuest();
   if (!isRedQuestActive(status)) return;
+  if (!requireStudentLogin(mode)) return;
   const reward = mode === 'manual' ? Number(status.points_reward) : 10;
   const overlay = $('redQuestOverlay');
   const card = overlay.querySelector('.red-quest-card');
@@ -1735,15 +1911,14 @@ function openRedQuestModal(mode = 'auto') {
   $('redQuestDescription').innerHTML = mode === 'manual'
     ? `💎 QUEST AZUL: acerte e escolha OBRIGATORIAMENTE outro aluno para perder <strong>${status.points_penalty ?? 10} pontos</strong>. Você receberá <strong>+${reward} pontos</strong>, fogo azul e diamante depois de confirmar o ataque!`
     : 'Acerte uma questão para ganhar <strong>+10 pontos</strong> e atacar um adversário!';
-  $('redQuestStudentName').value = '';
-  $('redQuestStudentName').disabled = false;
+  $('redQuestRegisteredStudent').textContent = `👤 ${studentAccount.student_name}`;
   document.querySelectorAll('input[name="redQuestAnswer"]').forEach(input => {input.checked = false;input.disabled = false;});
   $('redQuestMessage').textContent = '';
   $('claimRedQuest').disabled = false;
   $('claimRedQuest').textContent = `ENVIAR RESPOSTA • +${reward} PONTOS`;
   overlay.hidden = false;
   updateRedQuestCountdown();
-  $('redQuestStudentName').focus();
+
 }
 function closeRedQuestModal() {
   const overlay = $('redQuestOverlay');
@@ -1830,9 +2005,9 @@ async function confirmRedAttack() {
 }
 async function claimRedQuest() {
   if (redQuestSubmitting) return;
-  const name = $('redQuestStudentName').value.trim();
+  if (!requireStudentLogin(redQuestMode)) return;
+  const name = studentAccount.student_name;
   const checked = document.querySelector('input[name="redQuestAnswer"]:checked');
-  if (!name) { $('redQuestMessage').textContent = 'Digite seu nome para participar.'; return; }
   if (!checked) { $('redQuestMessage').textContent = 'Selecione VERDADEIRO ou FALSO.'; return; }
   redQuestSubmitting = true;
   $('claimRedQuest').disabled = true;
@@ -1840,8 +2015,8 @@ async function claimRedQuest() {
   $('redQuestMessage').textContent = 'Conferindo sua resposta...';
   try {
     const isManual = redQuestMode === 'manual';
-    const result = await questRpc(isManual ? 'alienbot_claim_manual_red_quest' : 'alienbot_claim_red_quest', {
-      p_student_name:name,
+    const result = await questRpc(isManual ? 'alienbot_student_claim_blue' : 'alienbot_student_claim_red', {
+      p_student_session:studentAccount.session_token,
       p_answer:checked.value === 'true',
       ...(isManual ? {p_manual_quest_id: manualRedQuestStatus.quest_id} : {})
     });
@@ -2135,9 +2310,7 @@ $('questOverlay').addEventListener('click', event => {
   if (event.target === $('questOverlay')) closeQuestModal();
 });
 $('claimQuest').addEventListener('click', claimAlienQuest);
-$('questStudentName').addEventListener('keydown', event => {
-  if (event.key === 'Enter') claimAlienQuest();
-});
+
 
 /* EVENTOS DA QUEST DE FOGO */
 $('redQuestButton').addEventListener('click', () => openRedQuestModal('auto'));
@@ -2152,9 +2325,7 @@ $('closeRedAttack').addEventListener('click', closeRedAttackModal);
 $('skipRedAttack').addEventListener('click', closeRedAttackModal);
 $('confirmRedAttack').addEventListener('click', confirmRedAttack);
 $('redAttackOverlay').addEventListener('click', event => { if (event.target === $('redAttackOverlay')) closeRedAttackModal(); });
-$('redQuestStudentName').addEventListener('keydown', event => {
-  if (event.key === 'Enter') claimRedQuest();
-});
+
 
 /* EVENTOS */
 
@@ -2163,6 +2334,13 @@ $('toggleAdmin').addEventListener('click', () => {
   $('toggleAdmin').textContent = open ? 'Fechar painel' : 'Abrir painel';
 });
 
+$('studentLoginToggle').addEventListener('click', () => openStudentLogin());
+$('studentLogoutButton').addEventListener('click', logoutStudent);
+$('studentLoginButton').addEventListener('click', loginStudent);
+$('studentLoginPin').addEventListener('keydown', e => {if(e.key==='Enter')loginStudent();});
+$('closeStudentLogin').addEventListener('click', closeStudentLogin);
+$('studentLoginOverlay').addEventListener('click', e => {if(e.target === $('studentLoginOverlay'))closeStudentLogin();});
+$('teacherSaveStudentPin').addEventListener('click', teacherSetStudentPin);
 $('loginButton').addEventListener('click', login);
 
 $('teacherPassword').addEventListener('keydown', e => {
@@ -2181,7 +2359,7 @@ $('manageRows').addEventListener('click', (event) => {
 
   if (select) {
     selectedId = select.dataset.select;
-
+    $('teacherPinStudent').value = selectedId;
     const s = students.find(x => x.id === selectedId);
 
     $('studentName').value = s ? s.name : '';
@@ -2349,6 +2527,8 @@ async function start() {
       </tr>
     `;
   }
+
+  await restoreStudentLogin();
 
   if (session?.access_token) {
     setAdminState(true);
