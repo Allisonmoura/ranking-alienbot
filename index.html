@@ -1835,6 +1835,8 @@ async function claimAlienQuest() {
 /* QUEST VERMELHA: automática de hora em hora + manual do professor. */
 function studentQuestClass(studentId) {
   const id = String(studentId);
+  // O destaque mais forte permanece durante suas 6 horas, mesmo após outra QUEST.
+  if (manualBlueHighlightedIds.has(id)) return 'blue-fire-highlight';
   if (redQuestHighlightedIds.has(id)) return 'fire-highlight';
   if (questHighlightedIds.has(id)) return 'quest-highlight';
   return '';
