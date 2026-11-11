@@ -1195,7 +1195,7 @@ main > header {
           </p>
         </div>
 
-        <div class="admin-tools" id="adminTools" hidden>
+        <!-- QUEST manual: visível no painel, mas somente o professor autenticado pode liberar -->
           <div class="manual-fire-admin">
             <div>
               <strong>🔥 LIBERAR QUEST VERMELHA AGORA</strong>
@@ -1208,8 +1208,9 @@ main > header {
               </div>
               <button id="startManualRedQuest" class="manual-fire-start" type="button">🔥 LIBERAR QUEST</button>
             </div>
-            <p id="manualRedStatus" class="notice" role="status" aria-live="polite"></p>
+            <p id="manualRedStatus" class="notice" role="status" aria-live="polite">Entre com sua conta de professor para habilitar este botão.</p>
           </div>
+        <div class="admin-tools" id="adminTools" hidden>
           <div class="form-grid">
             <div class="field wide">
               <label for="studentName">NOME DO ALUNO</label>
@@ -1695,6 +1696,14 @@ async function loadStudents() {
 function setAdminState(loggedIn) {
   $('loginBox').hidden = loggedIn;
   $('adminTools').hidden = !loggedIn;
+
+  // O cartão de QUEST permanece à vista no painel, mas só libera com login.
+  $('manualRedPoints').disabled = !loggedIn;
+  $('startManualRedQuest').disabled = !loggedIn;
+  $('startManualRedQuest').textContent = loggedIn ? '🔥 LIBERAR QUEST' : '🔒 ENTRE PARA LIBERAR';
+  $('manualRedStatus').textContent = loggedIn
+    ? 'Professor conectado. Escolha os pontos e libere a QUEST especial.'
+    : 'Faça login como professor acima para liberar a QUEST vermelha.';
 
   $('loginStatus').textContent = loggedIn
     ? 'Sessão do professor ativa.'
