@@ -1143,6 +1143,28 @@ main > header {
 .emotion-count-item .emoji{font-size:19px;line-height:1.15}
 .emotion-count-item .count{font-size:11px;line-height:1.15;font-weight:900;color:#d5d0dd;margin:2px 0 0}
 @media(max-width:520px){.emotion-quest-button{width:31px;height:31px;flex-basis:31px}.emotion-emoji-grid{gap:6px}.emotion-emoji-choice{min-height:63px;font-size:21px}.emotion-target-list{max-height:115px}}
+
+/* VOTAÇÃO DA EQUIPE — PREVISÃO E CONTROLE DO PROFESSOR */
+.elimination-panel{margin:6px 0 19px;padding:16px 19px;border:1px solid #37414f;border-radius:16px;background:linear-gradient(115deg,#131923,#101015);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.elimination-panel .elimination-eyebrow{color:#b3c6df;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin:0 0 5px}
+.elimination-panel h2{color:#f0f3ff;font-size:17px;margin:0 0 4px}
+.elimination-panel .elimination-help{color:#a8b3c4;font-size:12px;line-height:1.45;margin:0}
+.elimination-timer{font-variant-numeric:tabular-nums;font-weight:950;font-size:clamp(23px,4vw,34px);letter-spacing:.03em;color:#bfe0ff;white-space:nowrap}
+.elimination-action{border:1px solid #a9d7ff;background:#24476c;color:#e8f6ff;padding:11px 17px}
+.elimination-action[hidden]{display:none!important}
+.elimination-candidates{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:16px 0}
+.elimination-candidate{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;min-height:67px;padding:13px 8px;background:#1a1b26;border:1px solid #505c73;border-radius:12px;color:#e4edf9;font-weight:900;cursor:pointer;overflow-wrap:anywhere}
+.elimination-candidate:has(input:checked){background:#183b61;border-color:#8bd0ff;box-shadow:0 0 0 1px #8bd0ff66}
+.elimination-candidate input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.elimination-vote-card{border-color:#5d82a3;background:radial-gradient(ellipse at 50% 0%,#1a2d40,#0d1118 63%,#080808)}
+.elimination-vote-card h2{color:#b6dfff}
+.elimination-vote-card .quest-eyebrow{color:#a4c2df}
+.elimination-confirm{background:linear-gradient(100deg,#8fd0ff,#5386cd);color:#081423}
+.elimination-teacher{border:1px solid #50687d;padding:15px;border-radius:13px;margin-bottom:17px;background:#111b24}
+.elimination-teacher strong{font-size:13px;color:#b8dfff}
+.elimination-teacher button{margin-top:11px}
+#eliminationTeacherResult{margin-top:10px;color:#bdcbd8;font-size:12px;line-height:1.6}
+@media(max-width:520px){.elimination-panel{padding:12px 13px}.elimination-timer{font-size:24px}.elimination-candidate{font-size:12px}}
 </style>
 </head>
 
@@ -1184,6 +1206,20 @@ main > header {
       </div>
     </section>
 
+
+    <!-- CRONÔMETRO PÚBLICO: VOTAÇÃO DOMINICAL ÀS 22H, HORÁRIO DA PARAÍBA -->
+    <section class="elimination-panel" aria-label="Cronômetro da votação semanal">
+      <div>
+        <p class="elimination-eyebrow">DOMINGO • 22H • HORÁRIO DA PARAÍBA</p>
+        <h2 id="eliminationTitle">Votação da equipe</h2>
+        <p class="elimination-help" id="eliminationHelp">A contagem termina no domingo às 22h. Os dois últimos não participam da votação.</p>
+      </div>
+      <div>
+        <div id="eliminationTimer" class="elimination-timer" aria-live="off">--d --h --m --s</div>
+        <button id="eliminationOpenVote" type="button" class="elimination-action" hidden>🗳️ VOTAR AGORA</button>
+      </div>
+    </section>
+
     <section aria-label="Quatro primeiros colocados">
       <div class="podium" id="podium"></div>
     </section>
@@ -1208,6 +1244,21 @@ main > header {
         <div class="emotion-selection-summary" id="emotionSelectionSummary"></div>
         <button class="quest-claim emotion-submit" id="submitEmotionQuest" type="button" disabled>ENVIAR QUERIDÔMETRO</button>
         <p class="quest-message" id="emotionQuestMessage" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+
+
+    <!-- VOTO SIGILOSO: SOMENTE ALUNOS ELEGÍVEIS E COM PIN ALTERADO -->
+    <div class="quest-overlay" id="eliminationVoteOverlay" role="dialog" aria-modal="true" aria-labelledby="eliminationVoteTitle" hidden>
+      <div class="quest-card elimination-vote-card">
+        <button class="quest-close" id="eliminationCloseVote" type="button" aria-label="Fechar">×</button>
+        <div class="quest-emblem" aria-hidden="true">🗳️</div>
+        <p class="quest-eyebrow">VOTAÇÃO SEMANAL • SUA ESCOLHA É SIGILOSA</p>
+        <h2 id="eliminationVoteTitle">VOTAÇÃO DA EQUIPE</h2>
+        <p class="quest-description">Escolha um dos dois indicados. Cada aluno autorizado tem <strong>um voto</strong>. O resultado será visto somente pelo professor, que avaliará a situação antes de qualquer decisão.</p>
+        <div class="elimination-candidates" id="eliminationCandidates"></div>
+        <button class="quest-claim elimination-confirm" id="eliminationConfirmVote" type="button">CONFIRMAR MEU VOTO</button>
+        <p id="eliminationVoteMessage" class="quest-message" role="status" aria-live="polite"></p>
       </div>
     </div>
 
@@ -1393,6 +1444,13 @@ main > header {
             <p id="manualRedStatus" class="notice" role="status" aria-live="polite">Entre com sua conta de professor para habilitar este botão.</p>
           </div>
         <div class="admin-tools" id="adminTools" hidden>
+          <div class="elimination-teacher">
+            <strong>🗳️ VOTAÇÃO DOMINICAL — RESULTADO RESERVADO</strong>
+            <p class="notice">Abre aos domingos às 22h e termina às 23h. Os dois últimos não votam. Somente o professor consulta os totais após o encerramento. Nenhum participante é excluído automaticamente.</p>
+            <button class="secondary-btn" id="eliminationCheckResult" type="button">CONSULTAR ÚLTIMA APURAÇÃO</button>
+            <p id="eliminationTeacherResult" role="status">Aguardando consulta do professor.</p>
+          </div>
+
           <div class="student-pin-admin">
             <strong>🔐 ACESSO DOS ALUNOS ÀS QUESTS</strong>
             <p class="notice">Todos os alunos cadastrados recebem automaticamente o PIN provisório <strong>000000</strong> e precisam mudá-lo no primeiro acesso. Se um aluno esquecer o código, selecione-o abaixo e redefina para 000000. Isso desconecta seus aparelhos antigos.</p>
@@ -1852,6 +1910,7 @@ function continueAfterStudentAccess() {
   if (requested === 'gold') openQuestModal();
   else if (requested === 'auto' || requested === 'manual') openRedQuestModal(requested);
   else if (requested === 'emotion') openEmotionQuest();
+  else if (requested === 'elimination') openEliminationVote();
   else showQuestFeedback(`👽 Bem-vindo(a), ${studentAccount.student_name}!`,'blue');
 }
 async function restoreStudentLogin() {
@@ -1896,6 +1955,7 @@ async function loginStudent() {
     localStorage.setItem(STUDENT_SESSION_KEY,JSON.stringify(studentAccount));
     showStudentIdentity();
     await refreshStudentQuestProgress();
+    await refreshEliminationStatus();
     const requested = pendingStudentQuest;
     closeStudentLogin();
     if (studentAccount.must_change_pin) {
@@ -1942,6 +2002,7 @@ async function studentChangePin() {
     $('studentChangePinOverlay').hidden=true;
     showStudentIdentity();
     await refreshStudentQuestProgress();
+    await refreshEliminationStatus();
     continueAfterStudentAccess();
   } catch(error) {
     $('studentChangePinMessage').textContent=error.message || 'Falha ao trocar o PIN.';
@@ -2626,11 +2687,11 @@ function render() {
   $('studentCount').textContent =
     `${students.length} ${students.length === 1 ? 'participante' : 'participantes'}`;
 
-  /* QUATRO ÚLTIMOS COM ALERTA VERMELHO E PONTOS VISÍVEIS */
+  /* APENAS OS DOIS ÚLTIMOS COM VISUAL VERMELHO, SEM ETIQUETA. */
 
   $('rankingRows').innerHTML = ranking.length
     ? ranking.map((s, i) => {
-        const danger = i >= ranking.length - 4;
+        const danger = ranking.length >= 2 && i >= ranking.length - 2;
 
         return `
           <tr class="${danger ? 'danger-zone' : ''}">
@@ -2641,11 +2702,6 @@ function render() {
               ${blueRecentAttacks.has(String(s.id))
                 ? `<span class="blue-attack-note">Tirou ${Number(blueRecentAttacks.get(String(s.id)).points_removed) || 0} pontos de ${escapeHTML(blueRecentAttacks.get(String(s.id)).target_name)}</span>`
                 : ''}
-              ${
-                danger
-                  ? '<span class="danger-label">⚠ ZONA DE PERIGO</span>'
-                  : ''
-              }
             </td>
             <td class="points-cell">
               ${s.points} ${s.points === 1 ? 'ponto' : 'pontos'}
@@ -2919,6 +2975,132 @@ $('importFile').addEventListener('change', async (event) => {
   event.target.value = '';
 });
 
+
+/* VOTAÇÃO DOMINICAL • NOVO MÓDULO INDEPENDENTE */
+let eliminationStatus = null;
+let eliminationSubmitting = false;
+let eliminationPollBusy = false;
+
+function eliminationClock(ms){
+  const total = Math.max(0, Math.floor(ms/1000));
+  const days = Math.floor(total/86400);
+  const hours = String(Math.floor(total%86400/3600)).padStart(2,'0');
+  const minutes = String(Math.floor(total%3600/60)).padStart(2,'0');
+  const seconds = String(total%60).padStart(2,'0');
+  return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
+function updateEliminationTimer(){
+  const status=eliminationStatus;
+  if(!status) return;
+  const open=status.phase==='open';
+  const target=new Date(open ? status.ends_at : status.next_start).getTime();
+  $('eliminationTimer').textContent=Number.isFinite(target)
+    ? eliminationClock(target-Date.now()) : '--d --h --m --s';
+  $('eliminationTitle').textContent = open ? '🗳️ VOTAÇÃO ABERTA' : 'Votação da equipe';
+  if(status.phase==='insufficient'){
+    $('eliminationHelp').textContent='É necessário ter pelo menos três alunos cadastrados para iniciar a votação.';
+  } else if(open){
+    $('eliminationHelp').textContent='Escolha entre os dois últimos colocados, até as 23h. Os indicados não podem votar.';
+  } else {
+    $('eliminationHelp').textContent='A contagem termina no domingo às 22h. O resultado será reservado ao professor.';
+  }
+  const logged=Boolean(studentAccount?.session_token && !studentAccount?.must_change_pin);
+  const canStart=open && Date.now()<target && !status.voted && (!logged || status.eligible);
+  $('eliminationOpenVote').hidden=!canStart;
+  if(!canStart && !$('eliminationVoteOverlay').hidden) closeEliminationVote();
+}
+
+async function refreshEliminationStatus(){
+  if(eliminationPollBusy) return;
+  eliminationPollBusy=true;
+  try{
+    const token=studentAccount?.session_token && !studentAccount.must_change_pin
+      ? studentAccount.session_token : null;
+    eliminationStatus=await questRpc('alienbot_elimination_status',{p_student_session:token});
+    updateEliminationTimer();
+  } catch(error){
+    $('eliminationTimer').textContent='--d --h --m --s';
+    $('eliminationHelp').textContent='Cronômetro indisponível. Confira a instalação do SQL da votação.';
+    $('eliminationOpenVote').hidden=true;
+    console.warn('Votação dominical:',error.message);
+  } finally {eliminationPollBusy=false;}
+}
+
+function closeEliminationVote(){
+  $('eliminationVoteOverlay').hidden=true;
+  $('eliminationVoteMessage').textContent='';
+}
+
+async function openEliminationVote(){
+  if(eliminationStatus?.phase!=='open') return;
+  if(!requireStudentLogin('elimination')) return;
+  await refreshEliminationStatus();
+  const status=eliminationStatus;
+  if(status?.phase!=='open'){
+    showQuestFeedback('A votação já foi encerrada.','miss');return;
+  }
+  if(!status.eligible){
+    showQuestFeedback('Os dois indicados não podem votar nesta rodada.','miss');return;
+  }
+  if(status.voted){
+    showQuestFeedback('Seu voto desta rodada já foi registrado.','blue');return;
+  }
+  $('eliminationCandidates').innerHTML=[
+    {slot:1,name:status.candidate_a_name},
+    {slot:2,name:status.candidate_b_name}
+  ].map(c=>`<label class="elimination-candidate"><input type="radio" name="eliminationChoice" value="${c.slot}"/><span>${escapeHTML(c.name || 'Aluno')}</span></label>`).join('');
+  $('eliminationVoteMessage').textContent='';
+  $('eliminationConfirmVote').disabled=false;
+  $('eliminationVoteOverlay').hidden=false;
+}
+
+async function submitEliminationVote(){
+  if(eliminationSubmitting) return;
+  const checked=document.querySelector('input[name="eliminationChoice"]:checked');
+  if(!checked){$('eliminationVoteMessage').textContent='Selecione um dos dois indicados.';return;}
+  if(!studentAccount?.session_token || studentAccount.must_change_pin){
+    closeEliminationVote();openStudentLogin('elimination');return;
+  }
+  eliminationSubmitting=true;
+  $('eliminationConfirmVote').disabled=true;
+  $('eliminationVoteMessage').textContent='Registrando seu voto sigiloso...';
+  try{
+    const response=await questRpc('alienbot_elimination_vote',{
+      p_student_session:studentAccount.session_token,
+      p_candidate_slot:Number(checked.value)
+    });
+    closeEliminationVote();
+    showQuestFeedback(response?.message || 'Voto registrado em sigilo.','blue');
+    await refreshEliminationStatus();
+  }catch(error){
+    $('eliminationVoteMessage').textContent=error.message || 'Não foi possível registrar seu voto.';
+  }finally{
+    eliminationSubmitting=false;
+    $('eliminationConfirmVote').disabled=false;
+  }
+}
+
+async function checkEliminationTeacherResult(){
+  const output=$('eliminationTeacherResult');
+  output.textContent='Consultando apuração protegida...';
+  try{
+    const result=await teacherQuestRpc('alienbot_elimination_teacher_result');
+    if(!result?.available){output.textContent=result?.message||'Nenhuma votação encerrada ainda.';return;}
+    const a=String(result.candidate_a_name||'Candidato A');
+    const b=String(result.candidate_b_name||'Candidato B');
+    output.textContent=`Rodada de ${result.day} • ${a}: ${result.votes_a} voto(s) • ${b}: ${result.votes_b} voto(s) • ${result.voters} de ${result.eligible_voters} eleitores participaram${result.tie?' • EMPATE':''}. Resultado consultivo; nenhuma expulsão é feita automaticamente.`;
+  } catch(error){output.textContent=error.message||'Falha ao consultar os resultados.';}
+}
+
+$('eliminationOpenVote').addEventListener('click',openEliminationVote);
+$('eliminationCloseVote').addEventListener('click',closeEliminationVote);
+$('eliminationVoteOverlay').addEventListener('click',e=>{
+  if(e.target===$('eliminationVoteOverlay'))closeEliminationVote();
+});
+$('eliminationConfirmVote').addEventListener('click',submitEliminationVote);
+$('eliminationCheckResult').addEventListener('click',checkEliminationTeacherResult);
+
 /* INICIALIZAÇÃO */
 
 async function start() {
@@ -2953,13 +3135,15 @@ async function start() {
     });
   }, 10000);
 
-  await Promise.all([refreshQuest(), refreshRedQuest(), refreshManualRedQuest(), refreshEmotionStatus()]);
+  await Promise.all([refreshQuest(), refreshRedQuest(), refreshManualRedQuest(), refreshEmotionStatus(), refreshEliminationStatus()]);
   await refreshStudentQuestProgress();
   setInterval(refreshStudentQuestProgress, 5000);
   setInterval(refreshQuest, 5000);
   setInterval(refreshRedQuest, 5000);
   setInterval(refreshManualRedQuest, 5000);
   setInterval(refreshEmotionStatus, 10000);
+  setInterval(refreshEliminationStatus, 5000);
+  setInterval(updateEliminationTimer, 1000);
   setInterval(updateQuestCountdown, 1000);
   setInterval(updateRedQuestCountdown, 1000);
 }
