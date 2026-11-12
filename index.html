@@ -1103,6 +1103,46 @@ main > header {
 .header-user-stack #studentWelcome[hidden]{display:none!important}
 .student-pin-actions{grid-template-columns:minmax(0,1fr) auto}
 @media(max-width:680px){.header-user-stack{gap:5px}.header-user-stack .tag{font-size:9px;padding:6px 8px}.header-user-stack .student-login-strip{max-width:210px}.header-user-stack .student-login-strip button{font-size:10px;padding:6px 8px}.header-user-stack #studentWelcome{max-width:195px;font-size:10px}.student-pin-actions{grid-template-columns:1fr}}
+
+/* QUERIDÔMETRO DIÁRIO — NOVA QUEST, SEM ALTERAR AS 3 ANTERIORES */
+.emotion-quest-button{
+  width:35px;height:35px;flex:0 0 35px;padding:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid #ff9bc9;border-radius:50%;
+  background:#41182f;color:#ffe7f4;font-size:21px;cursor:pointer;
+}
+.emotion-quest-button[hidden]{display:none!important}
+.emotion-quest-button:hover{border-color:#ffd3e7;background:#5c2341}
+.emotion-quest-card{
+  width:min(100%,590px);max-height:min(86vh,780px);overflow-y:auto;
+  border:1px solid #a54e78;
+  background:linear-gradient(160deg,#2a1222,#120d18 60%,#090909);
+  box-shadow:0 24px 70px #000c;
+}
+.emotion-quest-card h2{color:#ffd6eb;font-size:25px}
+.emotion-quest-card .quest-eyebrow{color:#ff9ccc}
+.emotion-quest-card .quest-description{margin-bottom:12px}
+.emotion-note{font-size:11px;color:#d5bfd0;line-height:1.5;margin:8px 0 12px}
+.emotion-progress{color:#ffd0e9;font-size:12px;font-weight:850;margin:12px 0 7px}
+.emotion-progress-track{height:7px;border-radius:20px;background:#3c2636;overflow:hidden}
+#emotionProgressBar{height:100%;width:0;background:#ff9bc9;transition:width .2s ease}
+.emotion-target-list{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:15px 0 12px;max-height:150px;overflow-y:auto}
+.emotion-target-button{border:1px solid #6c405b;color:#f5dce9;background:#261826;padding:8px 11px;font-size:12px;border-radius:10px}
+.emotion-target-button.current{border-color:#ffa3d1;background:#683151}
+.emotion-target-button.voted::after{content:' ✓';color:#8effae;font-weight:900}
+.emotion-choice-title{color:#f4cae3;font-size:12px;font-weight:850;margin:9px 0}
+.emotion-emoji-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.emotion-emoji-choice{min-width:0;min-height:69px;border:1px solid #61405a;border-radius:11px;background:#261626;color:#fff;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;font-size:23px}
+.emotion-emoji-choice small{font-size:10px;color:#e8c9dc;line-height:1.2}
+.emotion-emoji-choice.active{border-color:#ffa9d5;background:#703251}
+.emotion-selection-summary{margin-top:10px;color:#cbbed0;font-size:11px;line-height:1.6;text-align:left}
+.emotion-submit{background:linear-gradient(90deg,#ffe5f1,#f5a7cc);color:#2d0e22}
+.emotion-submit:disabled{opacity:.5;cursor:not-allowed}
+.emotion-groups{display:flex;flex-wrap:wrap;align-items:start;gap:7px;margin-top:7px}
+.emotion-count-item{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:30px;gap:0;padding:3px 5px;border:1px solid #39303b;background:#201923;border-radius:8px}
+.emotion-count-item .emoji{font-size:19px;line-height:1.15}
+.emotion-count-item .count{font-size:11px;line-height:1.15;font-weight:900;color:#d5d0dd;margin:2px 0 0}
+@media(max-width:520px){.emotion-quest-button{width:31px;height:31px;flex-basis:31px}.emotion-emoji-grid{gap:6px}.emotion-emoji-choice{min-height:63px;font-size:21px}.emotion-target-list{max-height:115px}}
 </style>
 </head>
 
@@ -1119,6 +1159,7 @@ main > header {
         <button id="questButton" class="quest-button" type="button" aria-label="Abrir Alien Quest" title="Alien Quest" hidden>?</button>
         <button id="redQuestButton" class="red-quest-button" type="button" aria-label="Abrir QUEST de Fogo automática" title="QUEST de Fogo automática • +10 pontos" hidden>🔥</button>
         <button id="manualRedQuestButton" class="red-quest-button manual-quest-button" type="button" aria-label="Abrir QUEST Azul liberada pelo professor" title="QUEST Azul especial do professor" hidden>👽</button>
+        <button id="emotionQuestButton" class="emotion-quest-button" type="button" aria-label="Abrir Queridômetro diário" title="Queridômetro • nova missão todos os dias" hidden>💖</button>
       </div>
 
       <div class="header-user-stack">
@@ -1146,6 +1187,29 @@ main > header {
     <section aria-label="Quatro primeiros colocados">
       <div class="podium" id="podium"></div>
     </section>
+
+
+    <!-- QUERIDÔMETRO DIÁRIO: votação dos colegas, sem atribuir pontos. -->
+    <div class="quest-overlay" id="emotionQuestOverlay" role="dialog" aria-modal="true" aria-labelledby="emotionQuestTitle" hidden>
+      <div class="quest-card emotion-quest-card">
+        <button class="quest-close" id="closeEmotionQuest" type="button" aria-label="Fechar Queridômetro">×</button>
+        <div class="quest-emblem" aria-hidden="true">💖</div>
+        <p class="quest-eyebrow">QUEST DOS EMOTIONS • DIÁRIA</p>
+        <h2 id="emotionQuestTitle">QUERIDÔMETRO</h2>
+        <p class="quest-description">Escolha <strong>um emoji para cada colega</strong> da equipe. Você não pode escolher a si mesmo.</p>
+        <div class="student-registered-name" id="emotionQuestStudent">👤 Aluno conectado</div>
+        <p class="emotion-note" id="emotionQuestDate">Os emojis recebidos ficam na classificação geral e zeram à meia-noite (horário da Paraíba). Os votos são anônimos.</p>
+        <div class="emotion-progress" id="emotionProgressText">0 de 0 colegas</div>
+        <div class="emotion-progress-track"><div id="emotionProgressBar"></div></div>
+        <p class="emotion-choice-title">1. Escolha um colega</p>
+        <div class="emotion-target-list" id="emotionTargetList"></div>
+        <p class="emotion-choice-title" id="emotionSelectedLabel">2. Escolha um emoji</p>
+        <div class="emotion-emoji-grid" id="emotionEmojiGrid"></div>
+        <div class="emotion-selection-summary" id="emotionSelectionSummary"></div>
+        <button class="quest-claim emotion-submit" id="submitEmotionQuest" type="button" disabled>ENVIAR QUERIDÔMETRO</button>
+        <p class="quest-message" id="emotionQuestMessage" role="status" aria-live="polite"></p>
+      </div>
+    </div>
 
     <!-- O aluno escolhe seu cadastro e informa o PIN UMA unica vez neste navegador. -->
     <div class="quest-overlay" id="studentLoginOverlay" role="dialog" aria-modal="true" aria-labelledby="studentLoginTitle" hidden>
@@ -1449,6 +1513,21 @@ let manualBlueHighlightedIds = new Set();
 let blueRecentAttacks = new Map();
 let blueBlockedTargetIds = new Set();
 let serverQuestProgress = null;
+let emotionStatus = null;
+let emotionVotes = new Map();
+let emotionCurrentTarget = null;
+let emotionQuestSubmitting = false;
+let emotionOpenedDay = null;
+const EMOTION_CHOICES = [
+  {emoji:'❤️',name:'Carinho'},
+  {emoji:'😍',name:'Admiração'},
+  {emoji:'🤢',name:'Feio'},
+  {emoji:'🌟',name:'Destaque'},
+  {emoji:'🐍',name:'Cobra'},
+  {emoji:'🤡',name:'Palhaço'},
+  {emoji:'🪴',name:'Planta'},
+  {emoji:'🎯',name:'Alvo'}
+];
 const QUEST_DONE_STORAGE_KEY = 'alienbot-done-rounds-v2';
 let redAttackMode = 'auto';
 let bluePendingReward = 0;
@@ -1772,6 +1851,7 @@ function continueAfterStudentAccess() {
   pendingStudentQuest = null;
   if (requested === 'gold') openQuestModal();
   else if (requested === 'auto' || requested === 'manual') openRedQuestModal(requested);
+  else if (requested === 'emotion') openEmotionQuest();
   else showQuestFeedback(`👽 Bem-vindo(a), ${studentAccount.student_name}!`,'blue');
 }
 async function restoreStudentLogin() {
@@ -1879,6 +1959,8 @@ async function logoutStudent() {
   showStudentIdentity();
   closeQuestModal();
   closeRedQuestModal();
+  closeEmotionQuest();
+  refreshEmotionStatus().catch(()=>{});
   if(token) {
     try {await questRpc('alienbot_student_logout',{p_student_session:token});}
     catch (error){console.warn('Falha ao encerrar sessão de aluno no banco:',error.message);}
@@ -1907,6 +1989,122 @@ async function teacherSetStudentPin() {
 async function teacherQuestRpc(functionName, payload = {}) {
   if (!session?.access_token) throw new Error('Entre na conta do professor.');
   return api(`rpc/${functionName}`, {method:'POST',body:JSON.stringify(payload)});
+}
+
+/* QUERIDÔMETRO — CONSULTA DIÁRIA DO SUPABASE; NÃO MODIFICA OUTRAS QUESTS */
+function updateEmotionVisibility(){
+  const button=$('emotionQuestButton');
+  if (!button) return;
+  button.hidden = !emotionStatus?.active || Boolean(studentAccount?.session_token && !studentAccount.must_change_pin && emotionStatus?.completed);
+}
+async function refreshEmotionStatus(){
+  try {
+    const token=studentAccount?.session_token && !studentAccount.must_change_pin
+      ? studentAccount.session_token : null;
+    const fresh=await questRpc('alienbot_emotion_status',{p_student_session:token});
+    const previousDay=emotionStatus?.day;
+    emotionStatus=fresh;
+    updateEmotionVisibility();
+    if (previousDay && previousDay!==fresh?.day && !$('emotionQuestOverlay').hidden){
+      closeEmotionQuest();
+      showQuestFeedback('💖 Começou um novo dia! O Queridômetro foi reiniciado.','blue');
+    }
+    render();
+  } catch(error) {
+    $('emotionQuestButton').hidden=true;
+    console.warn('Queridômetro indisponível (instale o SQL complementar):',error.message);
+  }
+}
+function emotionPeers(){
+  return [...students].filter(s=>s.id!==studentAccount?.student_id)
+    .sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+}
+function emotionSelectedCount(){
+  return emotionPeers().filter(s=>emotionVotes.has(s.id)).length;
+}
+function renderEmotionForm(){
+  const peers=emotionPeers();
+  if (!peers.find(s=>s.id===emotionCurrentTarget)) emotionCurrentTarget=peers[0]?.id || null;
+  const count=emotionSelectedCount();
+  $('emotionProgressText').textContent=`${count} de ${peers.length} colegas`;
+  $('emotionProgressBar').style.width=`${peers.length ? Math.round(100*count/peers.length) : 0}%`;
+  $('emotionTargetList').innerHTML=peers.map(s=>`
+    <button type="button" class="emotion-target-button ${s.id===emotionCurrentTarget?'current':''} ${emotionVotes.has(s.id)?'voted':''}"
+      data-emotion-target="${escapeHTML(s.id)}">${escapeHTML(s.name)}</button>
+  `).join('');
+  const target=peers.find(s=>s.id===emotionCurrentTarget);
+  $('emotionSelectedLabel').textContent=target
+    ? `2. Qual emoji você dá para ${target.name}?` : '2. Escolha um colega';
+  const assigned=emotionVotes.get(emotionCurrentTarget);
+  $('emotionEmojiGrid').innerHTML=EMOTION_CHOICES.map(choice=>`
+    <button type="button" class="emotion-emoji-choice ${choice.emoji===assigned?'active':''}"
+      data-emoji="${escapeHTML(choice.emoji)}" aria-pressed="${choice.emoji===assigned}">
+      <span>${choice.emoji}</span><small>${choice.name}</small>
+    </button>
+  `).join('');
+  $('emotionSelectionSummary').textContent=count===peers.length && peers.length
+    ? '✅ Todos os colegas receberam um emoji. Confirme para concluir a QUEST de hoje.'
+    : `Faltam ${peers.length-count} ${peers.length-count===1?'colega':'colegas'} para concluir.`;
+  $('submitEmotionQuest').disabled=emotionQuestSubmitting || !peers.length || count!==peers.length;
+}
+function closeEmotionQuest(){
+  if ($('emotionQuestOverlay')) $('emotionQuestOverlay').hidden=true;
+}
+async function openEmotionQuest(){
+  if (!requireStudentLogin('emotion')) return;
+  // Sempre confirma a rodada no banco para evitar reabrir uma já respondida.
+  await refreshEmotionStatus();
+  if (!emotionStatus?.active) {showQuestFeedback('O Queridômetro precisa de pelo menos dois alunos.','miss');return;}
+  if (emotionStatus?.completed) {showQuestFeedback('💖 Você já respondeu hoje! Volte amanhã.','blue');return;}
+  emotionVotes=new Map();
+  emotionCurrentTarget=null;
+  emotionOpenedDay=emotionStatus.day;
+  $('emotionQuestStudent').textContent=`👤 ${studentAccount.student_name}`;
+  $('emotionQuestMessage').textContent='';
+  $('emotionQuestOverlay').hidden=false;
+  renderEmotionForm();
+}
+async function submitEmotionQuest(){
+  if (emotionQuestSubmitting || !studentAccount?.session_token) return;
+  const peers=emotionPeers();
+  if (!peers.length || emotionSelectedCount()!==peers.length){
+    $('emotionQuestMessage').textContent='Escolha um emoji para cada colega.';return;
+  }
+  emotionQuestSubmitting=true;
+  $('submitEmotionQuest').disabled=true;
+  $('emotionQuestMessage').textContent='Registrando os emojis no Queridômetro...';
+  try {
+    // Nova data sempre vem do servidor, evitando que o navegador decida o dia.
+    if (emotionOpenedDay!==emotionStatus?.day) throw new Error('O dia mudou. Reabra o Queridômetro.');
+    const result=await questRpc('alienbot_emotion_submit',{
+      p_student_session:studentAccount.session_token,
+      p_votes:peers.map(s=>({student_id:s.id,emoji:emotionVotes.get(s.id)}))
+    });
+    if (!result?.success) throw new Error(result?.message || 'O envio não foi concluído.');
+    closeEmotionQuest();
+    showQuestFeedback('💖 Queridômetro enviado! Você poderá participar novamente amanhã.','blue');
+    await refreshEmotionStatus();
+  } catch(error){
+    $('emotionQuestMessage').textContent=error.message || 'Falha ao registrar os emojis.';
+    await refreshEmotionStatus();
+  } finally {
+    emotionQuestSubmitting=false;
+    if (!$('emotionQuestOverlay').hidden) renderEmotionForm();
+  }
+}
+function emotionRankingBadges(studentId){
+  const entries=emotionStatus?.received?.[String(studentId)];
+  if (!Array.isArray(entries)||!entries.length)return '';
+  // Somente contagens: nenhuma identidade dos votantes é exibida.
+  return `<div class="emotion-groups" aria-label="Emojis recebidos no Queridômetro de hoje">`+
+    EMOTION_CHOICES.map(x=>entries.find(v=>v.emoji===x.emoji)).filter(Boolean).map(v=>{
+      const n=Number(v.count)||0;
+      const label=EMOTION_CHOICES.find(c=>c.emoji===v.emoji)?.name||'Emoji';
+      return `<span class="emotion-count-item" title="${escapeHTML(label)}: ${n}">
+        <span class="emoji">${escapeHTML(v.emoji)}</span>
+        ${n>1?`<span class="count">${n}</span>`:''}
+      </span>`;
+    }).join('')+`</div>`;
 }
 function questTimeLeft(ms) {
   const seconds = Math.max(0, Math.ceil(ms / 1000));
@@ -2439,6 +2637,7 @@ function render() {
             <td class="rank-num">${i + 1}º</td>
             <td class="student-cell"><span class="${studentQuestClass(s.id)}">
               ${escapeHTML(s.name)}</span>
+              ${emotionRankingBadges(s.id)}
               ${blueRecentAttacks.has(String(s.id))
                 ? `<span class="blue-attack-note">Tirou ${Number(blueRecentAttacks.get(String(s.id)).points_removed) || 0} pontos de ${escapeHTML(blueRecentAttacks.get(String(s.id)).target_name)}</span>`
                 : ''}
@@ -2514,6 +2713,26 @@ $('skipRedAttack').addEventListener('click', closeRedAttackModal);
 $('confirmRedAttack').addEventListener('click', confirmRedAttack);
 $('redAttackOverlay').addEventListener('click', event => { if (event.target === $('redAttackOverlay')) closeRedAttackModal(); });
 
+
+/* EVENTOS DO QUERIDÔMETRO */
+$('emotionQuestButton').addEventListener('click',openEmotionQuest);
+$('closeEmotionQuest').addEventListener('click',closeEmotionQuest);
+$('emotionQuestOverlay').addEventListener('click',e=>{if(e.target===$('emotionQuestOverlay'))closeEmotionQuest();});
+$('emotionTargetList').addEventListener('click',e=>{
+  const button=e.target.closest('[data-emotion-target]');
+  if (!button) return;
+  emotionCurrentTarget=button.dataset.emotionTarget;
+  renderEmotionForm();
+});
+$('emotionEmojiGrid').addEventListener('click',e=>{
+  const button=e.target.closest('[data-emoji]');
+  if (!button || !emotionCurrentTarget) return;
+  emotionVotes.set(emotionCurrentTarget,button.dataset.emoji);
+  const next=emotionPeers().find(s=>!emotionVotes.has(s.id));
+  if (next)emotionCurrentTarget=next.id;
+  renderEmotionForm();
+});
+$('submitEmotionQuest').addEventListener('click',submitEmotionQuest);
 
 /* EVENTOS */
 
@@ -2734,12 +2953,13 @@ async function start() {
     });
   }, 10000);
 
-  await Promise.all([refreshQuest(), refreshRedQuest(),refreshManualRedQuest()]);
+  await Promise.all([refreshQuest(), refreshRedQuest(), refreshManualRedQuest(), refreshEmotionStatus()]);
   await refreshStudentQuestProgress();
   setInterval(refreshStudentQuestProgress, 5000);
   setInterval(refreshQuest, 5000);
   setInterval(refreshRedQuest, 5000);
   setInterval(refreshManualRedQuest, 5000);
+  setInterval(refreshEmotionStatus, 10000);
   setInterval(updateQuestCountdown, 1000);
   setInterval(updateRedQuestCountdown, 1000);
 }
