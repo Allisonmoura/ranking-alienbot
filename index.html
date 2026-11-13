@@ -1165,6 +1165,50 @@ main > header {
 .elimination-teacher button{margin-top:11px}
 #eliminationTeacherResult{margin-top:10px;color:#bdcbd8;font-size:12px;line-height:1.6}
 @media(max-width:520px){.elimination-panel{padding:12px 13px}.elimination-timer{font-size:24px}.elimination-candidate{font-size:12px}}
+
+/* MENSAGEM DO DIA e LOJINHA — novos blocos, sem animacoes de fundo */
+.daily-message-quest-button {
+  width:35px;height:35px;flex:0 0 35px;display:inline-flex;align-items:center;
+  justify-content:center;border:1px solid #8df2e1;border-radius:50%;
+  color:#e9ffff;background:linear-gradient(140deg,#067b89,#11618b,#06324b);
+  box-shadow:0 0 12px #23cde566;font-size:20px;cursor:pointer;
+}
+.daily-message-quest-button[hidden]{display:none!important}
+.daily-features {display:grid;grid-template-columns:minmax(0,2.5fr) minmax(180px,1fr);gap:14px;margin:14px 0 22px}
+.daily-message-board,.alienbot-shop-card {
+  min-width:0;border:1px solid #266f7e;border-radius:17px;
+  background:linear-gradient(112deg,#0c2934,#0b141b 64%,#111);
+  padding:16px 19px;
+}
+.daily-message-board .daily-eyebrow,.alienbot-shop-card .daily-eyebrow{
+  display:block;margin:0 0 7px;font-size:10px;font-weight:900;letter-spacing:.13em;color:#76cddd;
+}
+.daily-message-board h2,.alienbot-shop-card h2{
+  font-size:17px;margin:0 0 9px;color:#e9fdff;
+}
+.daily-message-board blockquote {margin:9px 0 10px;padding:10px 12px;
+  border-left:3px solid #53d5e8;color:#effcff;background:#061a24;
+  border-radius:0 9px 9px 0;font-size:16px;font-weight:750;
+  overflow-wrap:anywhere;white-space:pre-wrap;line-height:1.5;
+}
+.daily-board-meta {margin:5px 0 0;color:#a4d9e3;font-size:12px;line-height:1.5}
+.daily-message-board .daily-board-author {color:#7af2ff;font-weight:900}
+.alienbot-shop-card{border-color:#665381;background:linear-gradient(125deg,#251831,#111018 80%);display:flex;flex-direction:column;justify-content:center;gap:2px}
+.alienbot-shop-card .daily-eyebrow{color:#ba9ae3}
+.alienbot-shop-card h2{color:#f0e7ff;margin:0}
+.alienbot-shop-card p{margin:5px 0 0;color:#c4b2d8;font-size:12px}
+.alienbot-shop-card .shop-soon{font-size:11px;font-weight:900;letter-spacing:.16em;color:#f4d28e;margin-top:9px}
+.daily-message-quest-card{border-color:#43a8b8;background:radial-gradient(ellipse at 45% 0%,#114e5b,#0e1b24 55%,#090d10)}
+.daily-message-quest-card h2{color:#9aefff}
+.daily-message-quest-card textarea{
+  width:100%;background:#071922;color:#f1fcff;border:1px solid #428da0;
+  border-radius:11px;padding:12px;font:inherit;min-height:120px;resize:vertical;
+}
+.daily-message-quest-card textarea:focus{outline:2px solid #3eaccf}
+.daily-message-quest-card .quest-claim{color:#09232e;background:linear-gradient(100deg,#a4f8ff,#43bad8)}
+.daily-message-quest-card .quest-message{color:#a5edff}
+.daily-text-count{font-size:11px;color:#9ab9c2;margin:7px 0;text-align:right}
+@media(max-width:650px){.daily-features{grid-template-columns:1fr}.daily-message-board,.alienbot-shop-card{padding:14px 15px}}
 </style>
 </head>
 
@@ -1182,6 +1226,7 @@ main > header {
         <button id="redQuestButton" class="red-quest-button" type="button" aria-label="Abrir QUEST de Fogo automática" title="QUEST de Fogo automática • +10 pontos" hidden>🔥</button>
         <button id="manualRedQuestButton" class="red-quest-button manual-quest-button" type="button" aria-label="Abrir QUEST Azul liberada pelo professor" title="QUEST Azul especial do professor" hidden>👽</button>
         <button id="emotionQuestButton" class="emotion-quest-button" type="button" aria-label="Abrir Queridômetro diário" title="Queridômetro • nova missão todos os dias" hidden>💖</button>
+        <button id="dailyMessageQuestButton" class="daily-message-quest-button" type="button" aria-label="Abrir Quest da Mensagem do Dia" title="Mensagem do Dia • +50 ou −50 pontos" hidden>📝</button>
       </div>
 
       <div class="header-user-stack">
@@ -1219,6 +1264,42 @@ main > header {
         <button id="eliminationOpenVote" type="button" class="elimination-action" hidden>🗳️ VOTAR AGORA</button>
       </div>
     </section>
+
+
+    <!-- MENSAGEM DO DIA: UMA PESSOA SORTEADA, RENOVACAO A MEIA-NOITE -->
+    <section class="daily-features" aria-label="Mensagem do dia e lojinha">
+      <article class="daily-message-board" aria-live="polite">
+        <span class="daily-eyebrow">📣 UMA VOZ POR DIA • QUEST DIÁRIA</span>
+        <h2>MENSAGEM DO DIA</h2>
+        <p class="daily-board-meta" id="dailyMessageSelected">Conectando ao sorteio diário...</p>
+        <blockquote id="dailyMessageText">Aguardando a mensagem de hoje.</blockquote>
+        <p class="daily-board-meta" id="dailyMessageHint">Uma pessoa sorteada ganha 50 pontos ao publicar ou perde até 50 se não concluir até meia-noite.</p>
+        <p class="daily-board-meta" id="dailyMessageCountdown" aria-live="off">Nova rodada à meia-noite • horário da Paraíba</p>
+      </article>
+      <article class="alienbot-shop-card" aria-label="Lojinha em breve">
+        <span class="daily-eyebrow">🎁 FUTURAS RECOMPENSAS</span>
+        <h2>🛒 LOJINHA ALIENBOT</h2>
+        <p>Um novo espaço de recompensas está chegando.</p>
+        <span class="shop-soon">🔒 EM BREVE</span>
+      </article>
+    </section>
+
+    <!-- NOVA QUEST: somente a pessoa sorteada pode enviar a mensagem -->
+    <div class="quest-overlay" id="dailyMessageOverlay" role="dialog" aria-modal="true" aria-labelledby="dailyMessageTitle" hidden>
+      <div class="quest-card daily-message-quest-card">
+        <button id="closeDailyMessageQuest" class="quest-close" type="button" aria-label="Fechar">×</button>
+        <div class="quest-emblem" aria-hidden="true">📝</div>
+        <p class="quest-eyebrow">ALIENBOT • MISSÃO SORTEADA</p>
+        <h2 id="dailyMessageTitle">SUA MENSAGEM DO DIA</h2>
+        <p class="quest-description">Você foi sorteado! Escreva uma mensagem para a equipe até meia-noite. Ao publicar, você ganha <strong>+50 pontos</strong>. Se não concluir, perde <strong>até 50 pontos</strong>.</p>
+        <div class="student-registered-name" id="dailyMessageAuthor">👤 Aluno sorteado</div>
+        <label class="quest-label" for="dailyMessageInput">O que você quer dizer à equipe hoje?</label>
+        <textarea id="dailyMessageInput" maxlength="200" placeholder="Minha mensagem do dia é..."></textarea>
+        <div class="daily-text-count" id="dailyMessageCount">0 / 200</div>
+        <button id="submitDailyMessage" class="quest-claim" type="button">PUBLICAR MENSAGEM • +50 PONTOS</button>
+        <p id="dailyMessageError" class="quest-message" role="status" aria-live="polite"></p>
+      </div>
+    </div>
 
     <section aria-label="Quatro primeiros colocados">
       <div class="podium" id="podium"></div>
@@ -1572,6 +1653,9 @@ let blueRecentAttacks = new Map();
 let blueBlockedTargetIds = new Set();
 let serverQuestProgress = null;
 let emotionStatus = null;
+let dailyMessageStatus = null;
+let dailyMessageSubmitting = false;
+let dailyMessageLoading = false;
 let emotionVotes = new Map();
 let emotionCurrentTarget = null;
 let emotionQuestSubmitting = false;
@@ -1910,6 +1994,7 @@ function continueAfterStudentAccess() {
   if (requested === 'gold') openQuestModal();
   else if (requested === 'auto' || requested === 'manual') openRedQuestModal(requested);
   else if (requested === 'emotion') openEmotionQuest();
+  else if (requested === 'daily_message') openDailyMessageQuest();
   else if (requested === 'elimination') openEliminationVote();
   else showQuestFeedback(`👽 Bem-vindo(a), ${studentAccount.student_name}!`,'blue');
 }
@@ -1956,6 +2041,7 @@ async function loginStudent() {
     showStudentIdentity();
     await refreshStudentQuestProgress();
     await refreshEliminationStatus();
+    await refreshDailyMessageStatus();
     const requested = pendingStudentQuest;
     closeStudentLogin();
     if (studentAccount.must_change_pin) {
@@ -2003,6 +2089,7 @@ async function studentChangePin() {
     showStudentIdentity();
     await refreshStudentQuestProgress();
     await refreshEliminationStatus();
+    await refreshDailyMessageStatus();
     continueAfterStudentAccess();
   } catch(error) {
     $('studentChangePinMessage').textContent=error.message || 'Falha ao trocar o PIN.';
@@ -2022,6 +2109,7 @@ async function logoutStudent() {
   closeRedQuestModal();
   closeEmotionQuest();
   refreshEmotionStatus().catch(()=>{});
+  refreshDailyMessageStatus().catch(()=>{});
   if(token) {
     try {await questRpc('alienbot_student_logout',{p_student_session:token});}
     catch (error){console.warn('Falha ao encerrar sessão de aluno no banco:',error.message);}
@@ -3101,6 +3189,122 @@ $('eliminationVoteOverlay').addEventListener('click',e=>{
 $('eliminationConfirmVote').addEventListener('click',submitEliminationVote);
 $('eliminationCheckResult').addEventListener('click',checkEliminationTeacherResult);
 
+
+
+/* QUEST MENSAGEM DO DIA — nova missao isolada das quatro QUESTs anteriores */
+function dailyMessageClock(){
+  const status=dailyMessageStatus;
+  const clock=$('dailyMessageCountdown');
+  if (!status?.deadline_at){clock.textContent='Nova rodada à meia-noite • horário da Paraíba';return;}
+  const ms=Math.max(0,new Date(status.deadline_at).getTime()-Date.now());
+  const hours=Math.floor(ms/3600000);
+  const minutes=String(Math.floor(ms%3600000/60000)).padStart(2,'0');
+  const seconds=String(Math.floor(ms%60000/1000)).padStart(2,'0');
+  clock.textContent=`⏳ Nova rodada em ${String(hours).padStart(2,'0')}:${minutes}:${seconds} • horário da Paraíba`;
+  // A consulta periódica atualiza a rodada após meia-noite.
+}
+function renderDailyMessageStatus(){
+  const s=dailyMessageStatus;
+  const button=$('dailyMessageQuestButton');
+  const author=$('dailyMessageSelected');
+  const message=$('dailyMessageText');
+  const hint=$('dailyMessageHint');
+  if(!s?.active){
+    button.hidden=true;
+    author.textContent='Aguardando os primeiros alunos cadastrados.';
+    message.textContent='O sorteio começa quando houver participantes.';
+    hint.textContent='Somente o aluno sorteado receberá a missão.';
+    dailyMessageClock();return;
+  }
+  author.textContent=`👽 Sorteado(a) de hoje: ${s.selected_student_name || '—'}`;
+  if(s.completed && s.message){
+    message.textContent=`${s.selected_student_name}: “${s.message}”`;
+    hint.textContent='✅ Mensagem publicada! +50 pontos para o autor. Nova pessoa sorteada amanhã.';
+  } else {
+    message.textContent='Aguardando a mensagem do aluno sorteado...';
+    hint.textContent=s.can_post
+      ? '📝 É sua vez! Clique na QUEST para escrever. +50 se publicar; até −50 se não concluir.'
+      : 'O sorteado tem até 23h59 para publicar. Se não concluir, perde até 50 pontos.';
+  }
+  // Para quem nao fez login, o icone convida a entrar; o banco protege o envio.
+  button.hidden=Boolean(s.completed) || (Boolean(studentAccount?.session_token) && !s.can_post);
+  dailyMessageClock();
+}
+async function refreshDailyMessageStatus(){
+  if(dailyMessageLoading) return;
+  dailyMessageLoading=true;
+  try {
+    const token=studentAccount?.session_token && !studentAccount.must_change_pin
+      ? studentAccount.session_token : null;
+    const fresh=await questRpc('alienbot_message_status',{p_student_session:token});
+    const previousDay=dailyMessageStatus?.day;
+    dailyMessageStatus=fresh;
+    renderDailyMessageStatus();
+    if(previousDay && previousDay!==fresh?.day){
+      $('dailyMessageOverlay').hidden=true;
+      await loadStudents();
+    }
+  }catch(error){
+    $('dailyMessageQuestButton').hidden=true;
+    $('dailyMessageHint').textContent='Mensagem do Dia ainda indisponível. Instale o SQL complementar.';
+    console.warn('Quest Mensagem do Dia:',error.message);
+  }finally{dailyMessageLoading=false;}
+}
+function closeDailyMessageQuest(){
+  $('dailyMessageOverlay').hidden=true;
+  $('dailyMessageError').textContent='';
+}
+async function openDailyMessageQuest(){
+  if(!requireStudentLogin('daily_message')) return;
+  await refreshDailyMessageStatus();
+  if(!dailyMessageStatus?.active){
+    showQuestFeedback('Ainda não há sorteio ativo.','miss');return;
+  }
+  if(dailyMessageStatus.completed){
+    showQuestFeedback('A mensagem do dia já foi publicada.','blue');return;
+  }
+  if(!dailyMessageStatus.can_post){
+    showQuestFeedback(`Hoje a missão foi sorteada para ${dailyMessageStatus.selected_student_name}.`,'miss');return;
+  }
+  $('dailyMessageAuthor').textContent=`👤 ${studentAccount.student_name}`;
+  $('dailyMessageError').textContent='';
+  $('dailyMessageInput').value='';
+  $('dailyMessageCount').textContent='0 / 200';
+  $('dailyMessageOverlay').hidden=false;
+  $('dailyMessageInput').focus();
+}
+async function submitDailyMessage(){
+  if(dailyMessageSubmitting || !studentAccount?.session_token) return;
+  const value=$('dailyMessageInput').value.trim();
+  if(!value || value.length>200){
+    $('dailyMessageError').textContent='Escreva uma mensagem com até 200 caracteres.';return;
+  }
+  dailyMessageSubmitting=true;
+  $('submitDailyMessage').disabled=true;
+  $('dailyMessageError').textContent='Publicando sua mensagem e registrando os pontos...';
+  try {
+    const result=await questRpc('alienbot_message_submit',{
+      p_student_session:studentAccount.session_token,p_message:value
+    });
+    if(!result?.success)throw new Error(result?.message||'Não foi possível publicar.');
+    closeDailyMessageQuest();
+    showQuestFeedback('📝 Mensagem publicada! Você ganhou +50 pontos.','blue');
+    await Promise.all([refreshDailyMessageStatus(),loadStudents()]);
+  }catch(error){
+    $('dailyMessageError').textContent=error.message||'Erro ao publicar sua mensagem.';
+  }finally{
+    dailyMessageSubmitting=false;
+    $('submitDailyMessage').disabled=false;
+  }
+}
+$('dailyMessageQuestButton').addEventListener('click',openDailyMessageQuest);
+$('closeDailyMessageQuest').addEventListener('click',closeDailyMessageQuest);
+$('dailyMessageOverlay').addEventListener('click',e=>{if(e.target===$('dailyMessageOverlay'))closeDailyMessageQuest();});
+$('dailyMessageInput').addEventListener('input',()=>{
+  $('dailyMessageCount').textContent=`${$('dailyMessageInput').value.length} / 200`;
+});
+$('submitDailyMessage').addEventListener('click',submitDailyMessage);
+
 /* INICIALIZAÇÃO */
 
 async function start() {
@@ -3135,7 +3339,7 @@ async function start() {
     });
   }, 10000);
 
-  await Promise.all([refreshQuest(), refreshRedQuest(), refreshManualRedQuest(), refreshEmotionStatus(), refreshEliminationStatus()]);
+  await Promise.all([refreshQuest(), refreshRedQuest(), refreshManualRedQuest(), refreshEmotionStatus(), refreshEliminationStatus(), refreshDailyMessageStatus()]);
   await refreshStudentQuestProgress();
   setInterval(refreshStudentQuestProgress, 5000);
   setInterval(refreshQuest, 5000);
@@ -3143,6 +3347,8 @@ async function start() {
   setInterval(refreshManualRedQuest, 5000);
   setInterval(refreshEmotionStatus, 10000);
   setInterval(refreshEliminationStatus, 5000);
+  setInterval(refreshDailyMessageStatus, 12000);
+  setInterval(dailyMessageClock, 1000);
   setInterval(updateEliminationTimer, 1000);
   setInterval(updateQuestCountdown, 1000);
   setInterval(updateRedQuestCountdown, 1000);
