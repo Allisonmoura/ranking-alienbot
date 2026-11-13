@@ -1320,7 +1320,7 @@ main > header {
         <button id="redQuestButton" class="red-quest-button" type="button" aria-label="Abrir QUEST de Fogo automática" title="QUEST de Fogo automática • +10 pontos" hidden>🔥</button>
         <button id="manualRedQuestButton" class="red-quest-button manual-quest-button" type="button" aria-label="Abrir QUEST Azul liberada pelo professor" title="QUEST Azul especial do professor" hidden>👽</button>
         <button id="emotionQuestButton" class="emotion-quest-button" type="button" aria-label="Abrir Queridômetro diário" title="Queridômetro • nova missão todos os dias" hidden>💖</button>
-        <button id="dailyMessageQuestButton" class="daily-message-quest-button" type="button" aria-label="Abrir Quest da Mensagem do Dia" title="Mensagem do Dia • Aberta para toda a equipe">📝</button>
+        <button id="dailyMessageQuestButton" class="daily-message-quest-button" type="button" aria-label="Abrir Quest da Mensagem do Dia" title="Quest diária • +50 pontos para cada aluno">📝</button>
       </div>
 
       <div class="header-user-stack">
@@ -1361,13 +1361,13 @@ main > header {
       </section>
       <article class="daily-message-board" aria-label="Mensagem do dia" aria-live="polite">
         <div class="compact-message-top">
-          <button id="dailyMessageOpenFromBoard" class="compact-message-open" type="button" title="Abrir Quest da Mensagem do Dia">📝 Mensagem do Dia</button>
+          <button id="dailyMessageOpenFromBoard" class="compact-message-open" type="button" title="Abrir Quest diária +50 pontos">📝 Mensagem do Dia</button>
           <span class="daily-board-meta" id="dailyMessageSelected">Carregando sorteio...</span>
         </div>
         <details class="compact-message-details">
           <summary title="Clique para expandir a mensagem"><span id="dailyMessageText">Aguardando a mensagem de hoje.</span></summary>
         </details>
-        <p class="visually-hidden" id="dailyMessageHint">Ao publicar, o sorteado ganha 50 pontos.</p>
+        <p class="visually-hidden" id="dailyMessageHint">Todos podem resgatar 50 pontos por dia. Só o sorteado publica a mensagem.</p>
         <p class="visually-hidden" id="dailyMessageCountdown">Nova rodada à meia-noite.</p>
       </article>
       <article class="alienbot-shop-card" aria-label="Lojinha em breve">
@@ -1381,12 +1381,13 @@ main > header {
       <div class="quest-card daily-message-quest-card">
         <button id="closeDailyMessageQuest" class="quest-close" type="button" aria-label="Fechar">×</button>
         <div class="quest-emblem" aria-hidden="true">📝</div>
-        <p class="quest-eyebrow">ALIENBOT • MISSÃO SORTEADA</p>
+        <p class="quest-eyebrow">ALIENBOT • QUEST DIÁRIA +50</p>
         <h2 id="dailyMessageTitle">SUA MENSAGEM DO DIA</h2>
         <p class="quest-description" id="dailyMessageDescription">Missão diária: um aluno sorteado poderá publicar uma mensagem para a equipe.</p>
         <div class="student-registered-name" id="dailyMessageAuthor">👤 Aluno sorteado</div>
         <p id="dailyMessageViewer" class="daily-message-viewer" hidden></p>
         <button id="dailyMessageLoginPrompt" class="secondary-btn daily-login-prompt" type="button" hidden>🔐 Entrar para participar</button>
+        <button id="claimDailyMessagePoints" class="quest-claim daily-points-only" type="button" hidden>🎁 RESGATAR +50 PONTOS</button>
         <label class="quest-label daily-author-only" for="dailyMessageInput">O que você quer dizer à equipe hoje?</label>
         <textarea id="dailyMessageInput" class="daily-author-only" maxlength="200" placeholder="Minha mensagem do dia é..."></textarea>
         <div class="daily-text-count daily-author-only" id="dailyMessageCount">0 / 200</div>
@@ -1749,6 +1750,7 @@ let serverQuestProgress = null;
 let emotionStatus = null;
 let dailyMessageStatus = null;
 let dailyMessageSubmitting = false;
+let dailyMessageClaiming = false;
 let dailyMessageLoading = false;
 let emotionVotes = new Map();
 let emotionCurrentTarget = null;
@@ -3297,31 +3299,35 @@ function dailyMessageClock(){
   clock.textContent=`⏳ Nova rodada em ${String(hours).padStart(2,'0')}:${minutes}:${seconds} • horário da Paraíba`;
   // A consulta periódica atualiza a rodada após meia-noite.
 }
+function dailyMessageAlreadyClaimed(s){
+  return Boolean(studentAccount?.student_id &&
+    s?.viewer_student_id === studentAccount.student_id && s?.claimed);
+}
 function renderDailyMessageStatus(){
   const s=dailyMessageStatus;
   const button=$('dailyMessageQuestButton');
   const author=$('dailyMessageSelected');
   const message=$('dailyMessageText');
   const hint=$('dailyMessageHint');
-  // O atalho aparece para TODOS, inclusive quando o sorteio ainda não carregou.
-  button.hidden=false;
+  // Visitantes e alunos que ainda nao fizeram a Quest veem o icone.
+  // Apos completar, ele SOME apenas para o aluno autenticado.
+  button.hidden=dailyMessageAlreadyClaimed(s);
   if(!s?.active){
     author.textContent='Aguardando o sorteio diário.';
     message.textContent='O sorteio começa quando houver participantes.';
     hint.textContent='Aguarde o sorteio diário.';
     dailyMessageClock();return;
   }
-  author.textContent=`👽 Sorteado(a) de hoje: ${s.selected_student_name || '—'}`;
+  author.textContent=`👽 Sorteado(a): ${s.selected_student_name || '—'}`;
   if(s.completed && s.message){
     message.textContent=`${s.selected_student_name}: “${s.message}”`;
-    hint.textContent='✅ Mensagem publicada! +50 pontos para o autor. Nova pessoa sorteada amanhã.';
+    hint.textContent='Mensagem publicada! Todos os colegas ainda podem resgatar +50 hoje.';
   } else {
     message.textContent='Aguardando a mensagem do aluno sorteado...';
     hint.textContent=s.can_post
-      ? '📝 É sua vez! Clique na QUEST para escrever. +50 se publicar; até −50 se não concluir.'
-      : 'O sorteado tem até 23h59 para publicar. Se não concluir, perde até 50 pontos.';
+      ? 'Sua vez: publique a mensagem para ganhar +50. Se não publicar, perde até 50.'
+      : 'Resgate +50 hoje! O sorteado deve publicar até meia-noite.';
   }
-  // O botão permanece visível para todos; o banco autoriza só o sorteado a publicar.
   dailyMessageClock();
 }
 async function refreshDailyMessageStatus(){
@@ -3339,9 +3345,9 @@ async function refreshDailyMessageStatus(){
       await loadStudents();
     }
   }catch(error){
-    // Problemas na consulta não devem ocultar a Quest para toda a equipe.
-    $('dailyMessageQuestButton').hidden=false;
-    $('dailyMessageHint').textContent='Não foi possível consultar o sorteio. Clique na Quest para tentar novamente.';
+    // Nao faz reaparecer icone para quem ja concluiu se a rede falhar.
+    $('dailyMessageQuestButton').hidden=dailyMessageAlreadyClaimed(dailyMessageStatus);
+    $('dailyMessageHint').textContent='Não foi possível consultar a Quest. Tente novamente.';
     console.warn('Quest Mensagem do Dia:',error.message);
   }finally{dailyMessageLoading=false;}
 }
@@ -3350,39 +3356,72 @@ function closeDailyMessageQuest(){
   $('dailyMessageError').textContent='';
 }
 async function openDailyMessageQuest(){
-  // A janela é pública: somente a edição exige aluno sorteado com PIN válido.
+  // O painel da mensagem e publico; resgate e publicacao exigem PIN.
   await refreshDailyMessageStatus();
   const s=dailyMessageStatus;
   if(!s?.active){
     showQuestFeedback('Ainda não há sorteio ativo.','miss');return;
   }
-  const canWrite=Boolean(s.can_post && studentAccount?.session_token && !studentAccount.must_change_pin);
   const isLogged=Boolean(studentAccount?.session_token && !studentAccount.must_change_pin);
-  $('dailyMessageTitle').textContent=canWrite ? 'SUA MENSAGEM DO DIA' : 'MENSAGEM DO DIA';
+  const claimed=dailyMessageAlreadyClaimed(s);
+  const canWrite=Boolean(s.can_post && isLogged && !claimed);
+  const canClaim=Boolean(s.can_claim && isLogged && !claimed);
+  $('dailyMessageTitle').textContent=claimed ? 'QUEST CONCLUÍDA' : 'QUEST DIÁRIA • +50';
   $('dailyMessageAuthor').textContent=`👽 Sorteado(a): ${s.selected_student_name || '—'}`;
   $('dailyMessageError').textContent='';
-  $('dailyMessageDescription').textContent=canWrite
-    ? 'Você foi sorteado! Publique sua mensagem até meia-noite para ganhar +50 pontos. Se não publicar, perde até 50 pontos.'
-    : 'A missão aparece para toda a equipe, mas apenas o aluno sorteado pode publicar uma mensagem.';
+  $('dailyMessageDescription').textContent=claimed
+    ? 'Você já recebeu seus 50 pontos de hoje. Nova Quest à meia-noite!'
+    : canWrite
+      ? 'Você foi sorteado! Publique sua mensagem até meia-noite para ganhar +50. Se não publicar, perde até 50 pontos.'
+      : 'Todos podem resgatar +50 pontos hoje! Apenas o aluno sorteado pode escrever a Mensagem do Dia.';
   document.querySelectorAll('#dailyMessageOverlay .daily-author-only').forEach(el=>{el.hidden=!canWrite;});
+  $('claimDailyMessagePoints').hidden=!canClaim;
   const viewer=$('dailyMessageViewer');
   viewer.hidden=canWrite;
-  if(s.completed){
-    viewer.textContent=s.message
-      ? `✅ Mensagem publicada: “${s.message}”`
-      : '✅ A mensagem de hoje já foi enviada.';
-  } else if(!isLogged){
-    viewer.textContent=`Aguardando a mensagem de ${s.selected_student_name}. Entre com seu PIN para conferir se é sua vez.`;
-  } else if(studentAccount?.student_name){
-    viewer.textContent=`Hoje ${s.selected_student_name} foi sorteado(a). Só essa pessoa pode publicar. Volte amanhã para conferir o próximo sorteio!`;
-  } else {
-    viewer.textContent=`Hoje a missão pertence a ${s.selected_student_name}.`;
+  if(claimed){
+    viewer.textContent='✅ Seus +50 pontos já foram registrados. Amanhã haverá uma nova Quest!';
+  }else if(!isLogged){
+    viewer.textContent='🔐 Entre com seu PIN para ganhar os 50 pontos de hoje.';
+  }else if(canClaim){
+    viewer.textContent=`🎁 Clique para receber +50 pontos. ${s.selected_student_name} é quem pode escrever a mensagem.`;
+  }else if(s.completed){
+    viewer.textContent='✅ A mensagem de hoje já foi publicada.';
+  }else{
+    viewer.textContent=`📝 ${s.selected_student_name} foi sorteado(a) para publicar a mensagem.`;
   }
-  $('dailyMessageLoginPrompt').hidden=canWrite || isLogged || Boolean(s.completed);
+  // Mesmo depois que o sorteado publicou, outros alunos podem entrar e resgatar.
+  $('dailyMessageLoginPrompt').hidden=isLogged || claimed;
   $('dailyMessageInput').value='';
   $('dailyMessageCount').textContent='0 / 200';
   $('dailyMessageOverlay').hidden=false;
   if(canWrite) $('dailyMessageInput').focus();
+}
+async function claimDailyMessagePoints(){
+  if(dailyMessageClaiming || !studentAccount?.session_token) return;
+  dailyMessageClaiming=true;
+  const button=$('claimDailyMessagePoints');
+  button.disabled=true;
+  $('dailyMessageError').textContent='Registrando seus 50 pontos...';
+  try{
+    const result=await questRpc('alienbot_message_claim',{
+      p_student_session:studentAccount.session_token
+    });
+    if(!result?.success) throw new Error(result?.message || 'Não foi possível resgatar.');
+    closeDailyMessageQuest();
+    // Evita reexibir o icone se a proxima consulta de rede falhar.
+    dailyMessageStatus={...dailyMessageStatus, claimed:true, can_claim:false,
+      viewer_student_id:studentAccount.student_id};
+    renderDailyMessageStatus();
+    showQuestFeedback(result?.already_claimed
+      ? '✅ Você já resgatou a Quest de hoje.'
+      : '🎁 Quest diária concluída! +50 pontos!', 'blue');
+    await Promise.all([refreshDailyMessageStatus(),loadStudents()]);
+  }catch(error){
+    $('dailyMessageError').textContent=error.message||'Falha ao resgatar pontos.';
+  }finally{
+    dailyMessageClaiming=false;
+    button.disabled=false;
+  }
 }
 async function submitDailyMessage(){
   if(dailyMessageSubmitting || !studentAccount?.session_token) return;
@@ -3399,7 +3438,10 @@ async function submitDailyMessage(){
     });
     if(!result?.success)throw new Error(result?.message||'Não foi possível publicar.');
     closeDailyMessageQuest();
-    showQuestFeedback('📝 Mensagem publicada! Você ganhou +50 pontos.','blue');
+    dailyMessageStatus={...dailyMessageStatus, claimed:true, can_post:false,
+      completed:true,message:value,viewer_student_id:studentAccount.student_id};
+    renderDailyMessageStatus();
+    showQuestFeedback('📝 Mensagem publicada! +50 pontos na Quest diária.','blue');
     await Promise.all([refreshDailyMessageStatus(),loadStudents()]);
   }catch(error){
     $('dailyMessageError').textContent=error.message||'Erro ao publicar sua mensagem.';
@@ -3409,6 +3451,7 @@ async function submitDailyMessage(){
   }
 }
 $('dailyMessageQuestButton').addEventListener('click',openDailyMessageQuest);
+$('claimDailyMessagePoints').addEventListener('click',claimDailyMessagePoints);
 $('dailyMessageOpenFromBoard').addEventListener('click',openDailyMessageQuest);
 $('dailyMessageLoginPrompt').addEventListener('click',()=>{closeDailyMessageQuest();openStudentLogin('daily_message');});
 $('closeDailyMessageQuest').addEventListener('click',closeDailyMessageQuest);
